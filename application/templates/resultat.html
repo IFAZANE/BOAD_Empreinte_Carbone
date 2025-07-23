@@ -12,7 +12,7 @@
   <style>
     .charts-wrapper {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       justify-content: center;
       gap: 30px;
     }
@@ -28,19 +28,43 @@
     }
 
     .chart-box canvas {
-      max-width: 72%;
+      max-width: 100%;
       height: auto;
     }
 
+    .quit-top-right {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+
+    .logo-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .logo-container img {
+      height: 80px;
+    }
+
+    @media print {
+      .styled-button, .quit-top-right, .nav-buttons {
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
 
-    <!-- Bouton Quitter -->
-    <div class="quit-button">
-      <a href="/" class="styled-button">Quitter</a>
+    <!-- Bouton Quitter en haut à droite -->
+    <div class="quit-top-right">
+      <button onclick="clearAndQuit()" class="styled-button">Quitter</button>
+    </div>
+
+    <!-- Logo -->
+    <div class="logo-container">
+      <img src="{{ url_for('static', filename='logo-boad.webp') }}" alt="Logo BOAD" class="logo" />
     </div>
 
     <h1>Rapport Global des Émissions de CO₂</h1>
@@ -85,9 +109,15 @@
       </div>
     </div>
 
-    <!-- Boutons -->
+    <!-- Bouton PDF -->
     <button class="styled-button" onclick="downloadPDF()">📄 Télécharger le rapport en PDF</button>
 
+    <!-- Bouton Précédent -->
+    <div class="nav-buttons">
+      <div class="prev-step">
+        <button onclick="goBack()" type="button" id="prev-step" class="styled-button">← Précédent</button>
+      </div>
+    </div>
 
     <footer>
       <p>Banque Ouest Africaine de Développement (BOAD) – Rapport CO₂ © 2025</p>
@@ -95,6 +125,7 @@
   </div>
 
   <script>
+    // Charger les données du localStorage
     const raw = localStorage.getItem("emissionData");
     const data = raw ? JSON.parse(raw) : {};
 
@@ -121,9 +152,9 @@
 
     document.getElementById("total-emissions").textContent = total.toFixed(2) + " kg CO₂";
 
-    const colors = ["#004B87", "#006837", "#f0ad4e", "#8e44ad"]; // Couleur pour Déchets ajoutée
+    const colors = ["#004B87", "#006837", "#f0ad4e", "#8e44ad"];
 
-    // Doughnut
+    // Graphique circulaire
     const doughnutCtx = document.getElementById("emissionChartDoughnut").getContext("2d");
     new Chart(doughnutCtx, {
       type: "doughnut",
@@ -142,7 +173,7 @@
       }
     });
 
-    // Bar
+    // Graphique en barres
     const barCtx = document.getElementById("emissionChartBar").getContext("2d");
     new Chart(barCtx, {
       type: "bar",
@@ -180,6 +211,17 @@
         html2canvas: { scale: 2 },
         jsPDF: { unit: "in", format: "a4", orientation: "portrait" }
       }).from(document.getElementById("report")).save();
+    }
+
+    // Fonction Quitter : vide le localStorage et retourne à l'accueil
+    function clearAndQuit() {
+      localStorage.clear();
+      window.location.href = "/";
+    }
+
+    // Fonction Précédent : retourne à la page Déchets
+    function goBack() {
+      window.location.href = "/dechets";  // adapte selon ton routing Flask
     }
   </script>
 </body>
