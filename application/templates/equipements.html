@@ -44,10 +44,11 @@
 </head>
 <body>
   <div class="container">
-   <!-- Bouton Quitter -->
-<div class="quit-button">
-  <button onclick="window.location.href='/'" class="styled-button">Quitter</button>
-</div>
+
+    <!-- Bouton Quitter -->
+    <div class="quit-button">
+      <button onclick="clearAndQuit()" class="styled-button">Quitter</button>
+    </div>
 
     <h2>Équipements – Émissions de CO₂</h2>
 
@@ -69,24 +70,27 @@
       </tbody>
     </table>
 
-  <!-- Boutons navigation -->
-<div class="nav-buttons">
-  <div class="prev-step">
-  <button type="button" id="prev-step" class="styled-button">← Précédent</button>
-     </div>
-  <div class="next-step">
-    <button type="button" id="next-step" class="styled-button">Étape suivante →</button>
+    <!-- Boutons navigation -->
+    <div class="nav-buttons">
+      <div class="prev-step">
+        <button type="button" id="prev-step" class="styled-button">← Précédent</button>
+      </div>
+      <div class="next-step">
+        <button type="button" id="next-step" class="styled-button">Étape suivante →</button>
+      </div>
+    </div>
   </div>
-</div>
-  </div>
 
-
-
-<!-- ... ENTÊTE HTML INCHANGÉ ... -->
 <script>
   const equipements = {{ equipements | tojson | safe }};
 
-  function addEquipementRow() {
+  // Bouton Quitter : vide toutes les données enregistrées et redirige vers l'accueil
+  function clearAndQuit() {
+    localStorage.clear();
+    window.location.href = "/";
+  }
+
+  function addEquipementRow(savedData = null) {
     const tbody = document.getElementById("equipementBody");
     const row = document.createElement("tr");
     row.className = "row-equipement";
@@ -124,6 +128,18 @@
     tdResult.appendChild(spanResult);
     row.appendChild(tdResult);
 
+    // Pré-remplir avec données sauvegardées
+    if (savedData) {
+      selectCategorie.value = savedData.categorie;
+      selectCategorie.dispatchEvent(new Event("change"));
+      setTimeout(() => {
+        selectEngin.value = savedData.engin;
+        selectEngin.dispatchEvent(new Event("change"));
+        inputQuantite.value = savedData.quantite;
+        inputQuantite.dispatchEvent(new Event("input"));
+      }, 50);
+    }
+
     selectCategorie.addEventListener("change", () => {
       const cat = selectCategorie.value;
       selectEngin.innerHTML = `<option value="">-- Choisir un équipement --</option>`;
@@ -133,7 +149,7 @@
           opt.value = item.nom;
           opt.dataset.factor = item.facteur;
           opt.textContent = `${item.nom} (${item.facteur} kgCO₂/unité)`;
-          opt.title = item.description || `Facteur d’émission : ${item.facteur} kgCO₂/unité`; // ✅ Info-bulle ici
+          opt.title = item.description || `Facteur d’émission : ${item.facteur} kgCO₂/unité`;
           selectEngin.appendChild(opt);
         });
       }
@@ -166,6 +182,7 @@
     }
 
     updateTotalEquipement();
+    saveEquipementEmission();
   }
 
   function updateTotalEquipement() {
@@ -177,11 +194,30 @@
   }
 
   function saveEquipementEmission() {
-    const total = parseFloat(document.getElementById("total-equipements").textContent) || 0;
     const data = JSON.parse(localStorage.getItem("emissionData") || "{}");
+    const rows = document.querySelectorAll(".row-equipement");
+    const rowsData = [];
+
+    rows.forEach(row => {
+      const cat = row.querySelector("td:nth-child(1) select")?.value || "";
+      const engin = row.querySelector("td:nth-child(2) select")?.value || "";
+      const quantite = row.querySelector("td:nth-child(3) input")?.value || 0;
+      rowsData.push({ categorie: cat, engin: engin, quantite: parseFloat(quantite) });
+    });
+
+    const total = parseFloat(document.getElementById("total-equipements").textContent) || 0;
     data.equipements = total;
+    data.equipementRows = rowsData;
     localStorage.setItem("emissionData", JSON.stringify(data));
   }
+
+  // Restaurer les données au chargement
+  window.addEventListener("DOMContentLoaded", () => {
+    const data = JSON.parse(localStorage.getItem("emissionData") || "{}");
+    if (data.equipementRows && Array.isArray(data.equipementRows)) {
+      data.equipementRows.forEach(rowData => addEquipementRow(rowData));
+    }
+  });
 
   document.getElementById("next-step").addEventListener("click", function () {
     saveEquipementEmission();
