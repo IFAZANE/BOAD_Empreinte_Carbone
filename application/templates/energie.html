@@ -13,18 +13,15 @@
       font-weight: bold;
       border-top: 2px solid #000;
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
     }
-
     th, td {
       padding: 8px;
       border: 1px solid #ccc;
       text-align: left;
     }
-
     select, input[type="number"] {
       width: 100%;
     }
@@ -32,10 +29,11 @@
 </head>
 <body>
   <div class="container">
-      <!-- Bouton Quitter -->
-<div class="quit-button">
-  <button onclick="window.location.href='/'" class="styled-button">Quitter</button>
-</div>
+    <!-- Bouton Quitter -->
+    <div class="quit-button">
+      <button onclick="window.location.href='/'" class="styled-button">Quitter</button>
+    </div>
+
     <h2>Énergie – Émissions de CO₂</h2>
 
     <div class="add-buttons">
@@ -57,46 +55,40 @@
       </tbody>
     </table>
 
-   <!-- Boutons navigation -->
-<div class="nav-buttons">
-  <div class="prev-step">
-  <button type="button" id="prev-step" class="styled-button">← Précédent</button>
-     </div>
-  <div class="next-step">
-    <button type="button" id="next-step" class="styled-button">Étape suivante →</button>
-  </div>
-</div>
-
+    <!-- Boutons navigation -->
+    <div class="nav-buttons">
+      <div class="prev-step">
+        <button type="button" id="prev-step" class="styled-button">← Précédent</button>
+      </div>
+      <div class="next-step">
+        <button type="button" id="next-step" class="styled-button">Étape suivante →</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    // Ces données doivent être injectées côté Flask
     const energies = {{ energies | tojson | safe }};
-    // Exemple structure attendue :
-    // energies = {
-    //   "Électricité": { facteur: 0.055, unite: "kWh" },
-    //   "Gaz naturel": { facteur: 0.202, unite: "kWh" },
-    //   "Fioul": { facteur: 2.68, unite: "L" },
-    //   "Bois": { facteur: 0.015, unite: "kg" }
-    // };
 
     function addEnergyRow() {
       const tbody = document.getElementById("energieBody");
-
       const row = document.createElement("tr");
       row.className = "row-energie";
 
       const tdType = document.createElement("td");
       const select = document.createElement("select");
       select.innerHTML = `<option value="">-- Choisir --</option>`;
+
       Object.keys(energies).forEach(key => {
+        const energy = energies[key];
         const opt = document.createElement("option");
         opt.value = key;
-        opt.dataset.factor = energies[key].facteur;
-        opt.dataset.unite = energies[key].unite;
-        opt.textContent = `${key} (${energies[key].facteur} kgCO₂/${energies[key].unite})`;
+        opt.dataset.factor = energy.facteur;
+        opt.dataset.unite = energy.unite;
+        opt.textContent = `${key} (${energy.facteur} kgCO₂/${energy.unite})`;
+        opt.title = energy.description || `Facteur : ${energy.facteur} kgCO₂/${energy.unite}`;
         select.appendChild(opt);
       });
+
       tdType.appendChild(select);
       row.appendChild(tdType);
 
@@ -163,24 +155,22 @@
       document.getElementById("total-energie").textContent = subtotal.toFixed(2);
     }
 
+    function saveEnergieEmission() {
+      const total = parseFloat(document.getElementById("total-energie").textContent) || 0;
+      const data = JSON.parse(localStorage.getItem("emissionData") || "{}");
+      data.energie = total;
+      localStorage.setItem("emissionData", JSON.stringify(data));
+    }
 
- function saveEnergieEmission() {
-  const total = parseFloat(document.getElementById("total-energie").textContent) || 0;
-  const data = JSON.parse(localStorage.getItem("emissionData") || "{}");
-  data.energie = total;
-  localStorage.setItem("emissionData", JSON.stringify(data));
-}
+    document.getElementById("next-step").addEventListener("click", function () {
+      saveEnergieEmission();
+      window.location.href = "/equipements";
+    });
 
-document.getElementById("next-step").addEventListener("click", function () {
-  saveEnergieEmission();
-  window.location.href = "/equipements";
-});
-
-document.getElementById("prev-step").addEventListener("click", function () {
-  saveEnergieEmission();
-  window.location.href = "/transport";
-});
-
+    document.getElementById("prev-step").addEventListener("click", function () {
+      saveEnergieEmission();
+      window.location.href = "/transport";
+    });
   </script>
 </body>
 </html>
