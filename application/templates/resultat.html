@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rapport Émissions CO₂ – BOAD</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+
+  <style>
+    .charts-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+    }
+
+    .chart-box {
+      flex: 1 1 400px;
+      max-width: 500px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .chart-box canvas {
+      max-width: 100%;
+      height: auto;
+    }
+
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Bouton Quitter -->
+    <div class="quit-button">
+      <a href="/" class="styled-button">Quitter</a>
+    </div>
+
+    <h1>Rapport Global des Émissions de CO₂</h1>
+
+    <div id="report">
+
+      <!-- Résumé numérique -->
+      <div class="section">
+        <h2>Résumé des émissions par catégorie</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Catégorie</th>
+              <th>Émissions (kg CO₂)</th>
+            </tr>
+          </thead>
+          <tbody id="summary-table">
+            <!-- Rempli dynamiquement -->
+          </tbody>
+          <tfoot>
+            <tr>
+              <th>Total global</th>
+              <th id="total-emissions" style="color:#d32f2f;">0.00 kg CO₂</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Graphiques -->
+      <div class="section">
+        <h2>Visualisation graphique</h2>
+        <div class="charts-wrapper">
+          <div class="chart-box">
+            <h3 style="text-align:center;">Diagramme circulaire</h3>
+            <canvas id="emissionChartDoughnut"></canvas>
+          </div>
+          <div class="chart-box">
+            <h3 style="text-align:center;">Diagramme en bandes</h3>
+            <canvas id="emissionChartBar"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Boutons -->
+    <button class="styled-button" onclick="downloadPDF()">📄 Télécharger le rapport en PDF</button>
+
+
+    <footer>
+      <p>Banque Ouest Africaine de Développement (BOAD) – Rapport CO₂ © 2025</p>
+    </footer>
+  </div>
+
+  <script>
+    const raw = localStorage.getItem("emissionData");
+    const data = raw ? JSON.parse(raw) : {};
+
+    const transport = parseFloat(data.transport) || 0;
+    const energie = parseFloat(data.energie) || 0;
+    const equipements = parseFloat(data.equipements) || 0;
+    const dechets = parseFloat(data.dechets) || 0;
+
+    const rows = [
+      { label: "Transport", value: transport },
+      { label: "Énergie", value: energie },
+      { label: "Équipements", value: equipements },
+      { label: "Déchets", value: dechets }
+    ];
+
+    const tbody = document.getElementById("summary-table");
+    let total = 0;
+    rows.forEach(r => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${r.label}</td><td>${r.value.toFixed(2)} kg CO₂</td>`;
+      tbody.appendChild(tr);
+      total += r.value;
+    });
+
+    document.getElementById("total-emissions").textContent = total.toFixed(2) + " kg CO₂";
+
+    const colors = ["#004B87", "#006837", "#f0ad4e", "#8e44ad"]; // Couleur pour Déchets ajoutée
+
+    // Doughnut
+    const doughnutCtx = document.getElementById("emissionChartDoughnut").getContext("2d");
+    new Chart(doughnutCtx, {
+      type: "doughnut",
+      data: {
+        labels: rows.map(r => r.label),
+        datasets: [{
+          data: rows.map(r => r.value),
+          backgroundColor: colors
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+
+    // Bar
+    const barCtx = document.getElementById("emissionChartBar").getContext("2d");
+    new Chart(barCtx, {
+      type: "bar",
+      data: {
+        labels: rows.map(r => r.label),
+        datasets: [{
+          label: 'Émissions CO₂ (kg)',
+          data: rows.map(r => r.value),
+          backgroundColor: colors,
+          borderRadius: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { color: "#333" }
+          },
+          x: {
+            ticks: { color: "#333" }
+          }
+        },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+
+    // PDF export
+    function downloadPDF() {
+      html2pdf().set({
+        margin: 0.5,
+        filename: "rapport_emissions_boad.pdf",
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "in", format: "a4", orientation: "portrait" }
+      }).from(document.getElementById("report")).save();
+    }
+  </script>
+</body>
+</html>

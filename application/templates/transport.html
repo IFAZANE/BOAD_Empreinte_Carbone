@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Interface Transport - Émissions CO₂</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .total-row {
+      position: sticky;
+      bottom: 0;
+      background: #f8f8f8;
+      font-weight: bold;
+      border-top: 2px solid #000;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 8px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    select, input[type="number"] {
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+      <!-- Bouton Quitter -->
+<div class="quit-button">
+  <button onclick="window.location.href='/'" class="styled-button">Quitter</button>
+</div>
+    <h2>Transport – Émissions de CO₂</h2>
+
+    <div class="add-buttons">
+      <button onclick="addTransportRow('personne')">➕ Ajouter un transport de personnes</button>
+      <button onclick="addTransportRow('marchandise')">➕ Ajouter un transport de marchandises</button>
+    </div>
+
+    <table id="transportTable" aria-label="Tableau des transports et émissions">
+      <thead>
+        <tr>
+          <th>Type de Transport</th>
+          <th>Type d'engin</th>
+          <th>Caractéristiques</th>
+          <th>Nombre</th>
+          <th>Distance  (km)</th>
+          <th>Émissions (kg CO₂)</th>
+        </tr>
+      </thead>
+      <tbody id="transportBody">
+        <tr class="section-title"><td colspan="6">Transport de personnes</td></tr>
+        <tr class="subtotal-row personne"><td colspan="4">Sous-total personnes</td><td colspan="2"><span id="subtotal-personnes">0.00</span> kg CO₂</td></tr>
+        <tr class="section-title"><td colspan="6">Transport de marchandises</td></tr>
+        <tr class="subtotal-row marchandise"><td colspan="4">Sous-total marchandises</td><td colspan="2"><span id="subtotal-marchandises">0.00</span> kg CO₂</td></tr>
+        <tr class="total-row"><td colspan="4">Total</td><td colspan="2"><span id="total-transport">0.00</span> kg CO₂</td></tr>
+      </tbody>
+    </table>
+
+    <div class="next-step">
+      <button type="button" id="next-step">Étape suivante →</button>
+    </div>
+  </div>
+
+  <script>
+    const engins = {{ engins | tojson | safe }};
+
+    function addTransportRow(typeTransport) {
+      const tbody = document.getElementById("transportBody");
+      const sectionClass = typeTransport === "personne" ? "personne" : "marchandise";
+
+      const row = document.createElement("tr");
+      row.className = `row-transport ${sectionClass}`;
+
+      const tdType = document.createElement("td");
+      tdType.textContent = typeTransport === "personne" ? "Personnes" : "Marchandises";
+      row.appendChild(tdType);
+
+      const tdCategorie = document.createElement("td");
+      const selectCategorie = document.createElement("select");
+      selectCategorie.innerHTML = `<option value="">-- Choisir --</option>`;
+      Object.keys(engins).forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+        selectCategorie.appendChild(opt);
+      });
+      tdCategorie.appendChild(selectCategorie);
+      row.appendChild(tdCategorie);
+
+      const tdEngin = document.createElement("td");
+      const selectEngin = document.createElement("select");
+      selectEngin.innerHTML = `<option value="">-- Choisir un engin --</option>`;
+      tdEngin.appendChild(selectEngin);
+      row.appendChild(tdEngin);
+
+      const tdNombre = document.createElement("td");
+      const inputNombre = document.createElement("input");
+      inputNombre.type = "number";
+      inputNombre.min = 0;
+      inputNombre.step = 1;
+      tdNombre.appendChild(inputNombre);
+      row.appendChild(tdNombre);
+
+      const tdDistance = document.createElement("td");
+      const inputDistance = document.createElement("input");
+      inputDistance.type = "number";
+      inputDistance.min = 0;
+      inputDistance.step = 0.01;
+      tdDistance.appendChild(inputDistance);
+      row.appendChild(tdDistance);
+
+      const tdResult = document.createElement("td");
+      const spanResult = document.createElement("span");
+      spanResult.className = "emission-result";
+      spanResult.textContent = "0.00";
+      tdResult.appendChild(spanResult);
+      row.appendChild(tdResult);
+
+      selectCategorie.addEventListener("change", () => {
+        const cat = selectCategorie.value;
+        selectEngin.innerHTML = `<option value="">-- Choisir un engin --</option>`;
+        if (engins[cat]) {
+          engins[cat].forEach(item => {
+            const opt = document.createElement("option");
+            opt.value = item.nom;
+            opt.dataset.factor = item.facteur;
+            opt.textContent = `${item.nom} (${item.facteur} kgCO₂/km)`;
+            selectEngin.appendChild(opt);
+          });
+        }
+        calculateEmission(row);
+      });
+
+      selectEngin.addEventListener("change", () => calculateEmission(row));
+      inputNombre.addEventListener("input", () => {
+        if (inputNombre.value < 0) inputNombre.value = 0;
+        calculateEmission(row);
+      });
+      inputDistance.addEventListener("input", () => {
+        if (inputDistance.value < 0) inputDistance.value = 0;
+        calculateEmission(row);
+      });
+
+      const insertBefore = document.querySelector(`.subtotal-row.${sectionClass}`);
+      tbody.insertBefore(row, insertBefore);
+    }
+
+    function calculateEmission(row) {
+      const selectEngin = row.querySelector("td:nth-child(3) select");
+      const inputNombre = row.querySelector("td:nth-child(4) input");
+      const inputDistance = row.querySelector("td:nth-child(5) input");
+      const output = row.querySelector(".emission-result");
+
+      const facteur = parseFloat(selectEngin?.selectedOptions[0]?.dataset?.factor);
+      const nombre = parseFloat(inputNombre?.value);
+      const distance = parseFloat(inputDistance?.value);
+
+      if (!isNaN(facteur) && !isNaN(nombre) && !isNaN(distance)) {
+        const emission = facteur * nombre * distance;
+        output.textContent = emission.toFixed(2);
+      } else {
+        output.textContent = "0.00";
+      }
+
+      updateSubtotals();
+    }
+
+    function updateSubtotals() {
+      let subtotalPersonnes = 0;
+      let subtotalMarchandises = 0;
+
+      document.querySelectorAll("tr.row-transport.personne").forEach(row => {
+        const emissionCell = row.querySelector(".emission-result");
+        if (emissionCell) {
+          subtotalPersonnes += parseFloat(emissionCell.textContent);
+        }
+      });
+
+      document.querySelectorAll("tr.row-transport.marchandise").forEach(row => {
+        const emissionCell = row.querySelector(".emission-result");
+        if (emissionCell) {
+          subtotalMarchandises += parseFloat(emissionCell.textContent);
+        }
+      });
+
+      document.getElementById("subtotal-personnes").textContent = subtotalPersonnes.toFixed(2);
+      document.getElementById("subtotal-marchandises").textContent = subtotalMarchandises.toFixed(2);
+      document.getElementById("total-transport").textContent = (subtotalPersonnes + subtotalMarchandises).toFixed(2);
+    }
+
+
+
+
+function saveTransportEmission() {
+  const total = parseFloat(document.getElementById("total-transport").textContent) || 0;
+  const data = JSON.parse(localStorage.getItem("emissionData") || "{}");
+  data.transport = total;
+  localStorage.setItem("emissionData", JSON.stringify(data));
+}
+
+// Enregistrer avant de passer à l'étape suivante
+document.getElementById("next-step").addEventListener("click", function () {
+  saveTransportEmission();
+  window.location.href = "/energie";
+});
+
+
+  </script>
+</body>
+</html>

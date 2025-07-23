@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Interface Énergie - Émissions CO₂</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .total-row {
+      position: sticky;
+      bottom: 0;
+      background: #f8f8f8;
+      font-weight: bold;
+      border-top: 2px solid #000;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 8px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    select, input[type="number"] {
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+      <!-- Bouton Quitter -->
+<div class="quit-button">
+  <button onclick="window.location.href='/'" class="styled-button">Quitter</button>
+</div>
+    <h2>Énergie – Émissions de CO₂</h2>
+
+    <div class="add-buttons">
+      <button onclick="addEnergyRow()">➕ Ajouter une source d'énergie</button>
+    </div>
+
+    <table id="energieTable" aria-label="Tableau des consommations énergétiques et émissions">
+      <thead>
+        <tr>
+          <th>Type d'énergie</th>
+          <th>Consommation</th>
+          <th>Unité</th>
+          <th>Émissions (kg CO₂)</th>
+        </tr>
+      </thead>
+      <tbody id="energieBody">
+        <tr class="subtotal-row"><td colspan="3">Sous-total énergie</td><td><span id="subtotal-energie">0.00</span> kg CO₂</td></tr>
+        <tr class="total-row"><td colspan="3">Total</td><td><span id="total-energie">0.00</span> kg CO₂</td></tr>
+      </tbody>
+    </table>
+
+   <!-- Boutons navigation -->
+<div class="nav-buttons">
+  <div class="prev-step">
+  <button type="button" id="prev-step" class="styled-button">← Précédent</button>
+     </div>
+  <div class="next-step">
+    <button type="button" id="next-step" class="styled-button">Étape suivante →</button>
+  </div>
+</div>
+
+  </div>
+
+  <script>
+    // Ces données doivent être injectées côté Flask
+    const energies = {{ energies | tojson | safe }};
+    // Exemple structure attendue :
+    // energies = {
+    //   "Électricité": { facteur: 0.055, unite: "kWh" },
+    //   "Gaz naturel": { facteur: 0.202, unite: "kWh" },
+    //   "Fioul": { facteur: 2.68, unite: "L" },
+    //   "Bois": { facteur: 0.015, unite: "kg" }
+    // };
+
+    function addEnergyRow() {
+      const tbody = document.getElementById("energieBody");
+
+      const row = document.createElement("tr");
+      row.className = "row-energie";
+
+      const tdType = document.createElement("td");
+      const select = document.createElement("select");
+      select.innerHTML = `<option value="">-- Choisir --</option>`;
+      Object.keys(energies).forEach(key => {
+        const opt = document.createElement("option");
+        opt.value = key;
+        opt.dataset.factor = energies[key].facteur;
+        opt.dataset.unite = energies[key].unite;
+        opt.textContent = `${key} (${energies[key].facteur} kgCO₂/${energies[key].unite})`;
+        select.appendChild(opt);
+      });
+      tdType.appendChild(select);
+      row.appendChild(tdType);
+
+      const tdQuantite = document.createElement("td");
+      const input = document.createElement("input");
+      input.type = "number";
+      input.min = 0;
+      input.step = 0.01;
+      tdQuantite.appendChild(input);
+      row.appendChild(tdQuantite);
+
+      const tdUnite = document.createElement("td");
+      tdUnite.className = "unite-cell";
+      tdUnite.textContent = "-";
+      row.appendChild(tdUnite);
+
+      const tdEmission = document.createElement("td");
+      const span = document.createElement("span");
+      span.className = "emission-result";
+      span.textContent = "0.00";
+      tdEmission.appendChild(span);
+      row.appendChild(tdEmission);
+
+      select.addEventListener("change", () => {
+        tdUnite.textContent = select.selectedOptions[0].dataset.unite || "-";
+        calculateEmission(row);
+      });
+
+      input.addEventListener("input", () => {
+        if (input.value < 0) input.value = 0;
+        calculateEmission(row);
+      });
+
+      const insertBefore = document.querySelector(".subtotal-row");
+      tbody.insertBefore(row, insertBefore);
+    }
+
+    function calculateEmission(row) {
+      const select = row.querySelector("select");
+      const input = row.querySelector("input");
+      const output = row.querySelector(".emission-result");
+
+      const facteur = parseFloat(select.selectedOptions[0]?.dataset?.factor);
+      const quantite = parseFloat(input.value);
+
+      if (!isNaN(facteur) && !isNaN(quantite)) {
+        const emission = facteur * quantite;
+        output.textContent = emission.toFixed(2);
+      } else {
+        output.textContent = "0.00";
+      }
+
+      updateSubtotals();
+    }
+
+    function updateSubtotals() {
+      let subtotal = 0;
+      document.querySelectorAll("tr.row-energie").forEach(row => {
+        const emission = parseFloat(row.querySelector(".emission-result").textContent);
+        if (!isNaN(emission)) subtotal += emission;
+      });
+
+      document.getElementById("subtotal-energie").textContent = subtotal.toFixed(2);
+      document.getElementById("total-energie").textContent = subtotal.toFixed(2);
+    }
+
+
+ function saveEnergieEmission() {
+  const total = parseFloat(document.getElementById("total-energie").textContent) || 0;
+  const data = JSON.parse(localStorage.getItem("emissionData") || "{}");
+  data.energie = total;
+  localStorage.setItem("emissionData", JSON.stringify(data));
+}
+
+document.getElementById("next-step").addEventListener("click", function () {
+  saveEnergieEmission();
+  window.location.href = "/equipements";
+});
+
+document.getElementById("prev-step").addEventListener("click", function () {
+  saveEnergieEmission();
+  window.location.href = "/transport";
+});
+
+  </script>
+</body>
+</html>

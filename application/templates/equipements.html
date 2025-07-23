@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Équipements – Émissions de CO₂</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .total-row {
+      position: sticky;
+      bottom: 0;
+      background: #f8f8f8;
+      font-weight: bold;
+      border-top: 2px solid #000;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 8px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    select, input[type="number"] {
+      width: 100%;
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    .quit-button {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+   <!-- Bouton Quitter -->
+<div class="quit-button">
+  <button onclick="window.location.href='/'" class="styled-button">Quitter</button>
+</div>
+
+    <h2>Équipements – Émissions de CO₂</h2>
+
+    <div class="add-buttons">
+      <button onclick="addEquipementRow()">➕ Ajouter un équipement</button>
+    </div>
+
+    <table id="equipementTable" aria-label="Tableau des équipements et émissions">
+      <thead>
+        <tr>
+          <th>Catégorie</th>
+          <th>Équipement</th>
+          <th>Quantité</th>
+          <th>Émissions (kg CO₂)</th>
+        </tr>
+      </thead>
+      <tbody id="equipementBody">
+        <tr class="total-row"><td colspan="3">Total</td><td><span id="total-equipements">0.00</span> kg CO₂</td></tr>
+      </tbody>
+    </table>
+
+  <!-- Boutons navigation -->
+<div class="nav-buttons">
+  <div class="prev-step">
+  <button type="button" id="prev-step" class="styled-button">← Précédent</button>
+     </div>
+  <div class="next-step">
+    <button type="button" id="next-step" class="styled-button">Étape suivante →</button>
+  </div>
+</div>
+  </div>
+
+
+
+
+  <script>
+    const equipements = {{ equipements | tojson | safe }};
+
+    function addEquipementRow() {
+      const tbody = document.getElementById("equipementBody");
+      const row = document.createElement("tr");
+      row.className = "row-equipement";
+
+      const tdCategorie = document.createElement("td");
+      const selectCategorie = document.createElement("select");
+      selectCategorie.innerHTML = `<option value="">-- Choisir --</option>`;
+      Object.keys(equipements).forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat.charAt(0).toUpperCase() + cat.slice(1).replaceAll("_", " ");
+        selectCategorie.appendChild(opt);
+      });
+      tdCategorie.appendChild(selectCategorie);
+      row.appendChild(tdCategorie);
+
+      const tdEngin = document.createElement("td");
+      const selectEngin = document.createElement("select");
+      selectEngin.innerHTML = `<option value="">-- Choisir un équipement --</option>`;
+      tdEngin.appendChild(selectEngin);
+      row.appendChild(tdEngin);
+
+      const tdQuantite = document.createElement("td");
+      const inputQuantite = document.createElement("input");
+      inputQuantite.type = "number";
+      inputQuantite.min = 0;
+      inputQuantite.step = 1;
+      tdQuantite.appendChild(inputQuantite);
+      row.appendChild(tdQuantite);
+
+      const tdResult = document.createElement("td");
+      const spanResult = document.createElement("span");
+      spanResult.className = "emission-result";
+      spanResult.textContent = "0.00";
+      tdResult.appendChild(spanResult);
+      row.appendChild(tdResult);
+
+      selectCategorie.addEventListener("change", () => {
+        const cat = selectCategorie.value;
+        selectEngin.innerHTML = `<option value="">-- Choisir un équipement --</option>`;
+        if (equipements[cat]) {
+          equipements[cat].forEach(item => {
+            const opt = document.createElement("option");
+            opt.value = item.nom;
+            opt.dataset.factor = item.facteur;
+            opt.textContent = `${item.nom} (${item.facteur} kgCO₂/unité)`;
+            selectEngin.appendChild(opt);
+          });
+        }
+        calculateEquipementEmission(row);
+      });
+
+      selectEngin.addEventListener("change", () => calculateEquipementEmission(row));
+      inputQuantite.addEventListener("input", () => {
+        if (inputQuantite.value < 0) inputQuantite.value = 0;
+        calculateEquipementEmission(row);
+      });
+
+      const totalRow = document.querySelector(".total-row");
+      tbody.insertBefore(row, totalRow);
+    }
+
+    function calculateEquipementEmission(row) {
+      const selectEngin = row.querySelector("td:nth-child(2) select");
+      const inputQuantite = row.querySelector("td:nth-child(3) input");
+      const output = row.querySelector(".emission-result");
+
+      const facteur = parseFloat(selectEngin?.selectedOptions[0]?.dataset?.factor);
+      const quantite = parseFloat(inputQuantite?.value);
+
+      if (!isNaN(facteur) && !isNaN(quantite)) {
+        const emission = facteur * quantite;
+        output.textContent = emission.toFixed(2);
+      } else {
+        output.textContent = "0.00";
+      }
+
+      updateTotalEquipement();
+    }
+
+    function updateTotalEquipement() {
+      let total = 0;
+      document.querySelectorAll(".emission-result").forEach(cell => {
+        total += parseFloat(cell.textContent);
+      });
+      document.getElementById("total-equipements").textContent = total.toFixed(2);
+    }
+
+
+
+  document.getElementById("next-step").addEventListener("click", function () {
+    const totalTransport = parseFloat(localStorage.getItem("total-transport") || 0);
+    const totalEnergie = parseFloat(document.getElementById("total-energie").textContent || 0);
+    const totalEquipement = parseFloat(document.getElementById("total-equipements").textContent || 0);
+
+    const result = {
+      transport: totalTransport,
+      energie: totalEnergie,
+      equipements: totalEquipement
+    };
+
+    localStorage.setItem("emissionData", JSON.stringify(result));
+    window.location.href = "/resultat";
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+ function saveEquipementEmission() {
+  const total = parseFloat(document.getElementById("total-equipements").textContent) || 0;
+  const data = JSON.parse(localStorage.getItem("emissionData") || "{}");
+  data.equipements = total;
+  localStorage.setItem("emissionData", JSON.stringify(data));
+}
+
+document.getElementById("next-step").addEventListener("click", function () {
+  saveEquipementEmission();
+  window.location.href = "/dechets"; // OU la page suivante si différente
+});
+
+document.getElementById("prev-step").addEventListener("click", function () {
+  saveEquipementEmission();
+  window.location.href = "/energie";
+});
+
+  </script>
+</body>
+</html>
