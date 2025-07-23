@@ -28,14 +28,25 @@
     select, input[type="number"] {
       width: 100%;
     }
+
+    #enginDescription {
+      margin-top: 5px;
+      font-style: italic;
+      color: #555;
+      min-height: 1.2em;
+    }
+
+    .quit-button {
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-      <!-- Bouton Quitter -->
-<div class="quit-button">
-  <button onclick="window.location.href='/'" class="styled-button">Quitter</button>
-</div>
+    <div class="quit-button">
+      <button onclick="window.location.href='/'" class="styled-button">Quitter</button>
+    </div>
+
     <h2>Transport – Émissions de CO₂</h2>
 
     <div class="add-buttons">
@@ -50,7 +61,7 @@
           <th>Type d'engin</th>
           <th>Caractéristiques</th>
           <th>Nombre</th>
-          <th>Distance  (km)</th>
+          <th>Distance (km)</th>
           <th>Émissions (kg CO₂)</th>
         </tr>
       </thead>
@@ -62,6 +73,8 @@
         <tr class="total-row"><td colspan="4">Total</td><td colspan="2"><span id="total-transport">0.00</span> kg CO₂</td></tr>
       </tbody>
     </table>
+
+    <div id="enginDescription"></div>
 
     <div class="next-step">
       <button type="button" id="next-step">Étape suivante →</button>
@@ -78,10 +91,12 @@
       const row = document.createElement("tr");
       row.className = `row-transport ${sectionClass}`;
 
+      // Type de transport
       const tdType = document.createElement("td");
       tdType.textContent = typeTransport === "personne" ? "Personnes" : "Marchandises";
       row.appendChild(tdType);
 
+      // Catégorie d'engin
       const tdCategorie = document.createElement("td");
       const selectCategorie = document.createElement("select");
       selectCategorie.innerHTML = `<option value="">-- Choisir --</option>`;
@@ -94,12 +109,14 @@
       tdCategorie.appendChild(selectCategorie);
       row.appendChild(tdCategorie);
 
+      // Engin
       const tdEngin = document.createElement("td");
       const selectEngin = document.createElement("select");
       selectEngin.innerHTML = `<option value="">-- Choisir un engin --</option>`;
       tdEngin.appendChild(selectEngin);
       row.appendChild(tdEngin);
 
+      // Nombre
       const tdNombre = document.createElement("td");
       const inputNombre = document.createElement("input");
       inputNombre.type = "number";
@@ -108,6 +125,7 @@
       tdNombre.appendChild(inputNombre);
       row.appendChild(tdNombre);
 
+      // Distance
       const tdDistance = document.createElement("td");
       const inputDistance = document.createElement("input");
       inputDistance.type = "number";
@@ -116,6 +134,7 @@
       tdDistance.appendChild(inputDistance);
       row.appendChild(tdDistance);
 
+      // Résultat
       const tdResult = document.createElement("td");
       const spanResult = document.createElement("span");
       spanResult.className = "emission-result";
@@ -123,6 +142,7 @@
       tdResult.appendChild(spanResult);
       row.appendChild(tdResult);
 
+      // Choix catégorie
       selectCategorie.addEventListener("change", () => {
         const cat = selectCategorie.value;
         selectEngin.innerHTML = `<option value="">-- Choisir un engin --</option>`;
@@ -131,18 +151,29 @@
             const opt = document.createElement("option");
             opt.value = item.nom;
             opt.dataset.factor = item.facteur;
-            opt.textContent = `${item.nom} (${item.facteur} kgCO₂/km)`;
+            opt.dataset.description = item.description || `Aucune description disponible`;
+            opt.textContent = `${item.nom}`;
+            opt.title = item.description || `Aucune description disponible`; // ✅ Mise à jour ici
             selectEngin.appendChild(opt);
           });
         }
         calculateEmission(row);
+        document.getElementById("enginDescription").textContent = "";
       });
 
-      selectEngin.addEventListener("change", () => calculateEmission(row));
+      // Choix engin
+      selectEngin.addEventListener("change", () => {
+        calculateEmission(row);
+        const descDiv = document.getElementById("enginDescription");
+        const selectedOption = selectEngin.selectedOptions[0];
+        descDiv.textContent = selectedOption?.dataset?.description || "";
+      });
+
       inputNombre.addEventListener("input", () => {
         if (inputNombre.value < 0) inputNombre.value = 0;
         calculateEmission(row);
       });
+
       inputDistance.addEventListener("input", () => {
         if (inputDistance.value < 0) inputDistance.value = 0;
         calculateEmission(row);
@@ -178,16 +209,12 @@
 
       document.querySelectorAll("tr.row-transport.personne").forEach(row => {
         const emissionCell = row.querySelector(".emission-result");
-        if (emissionCell) {
-          subtotalPersonnes += parseFloat(emissionCell.textContent);
-        }
+        if (emissionCell) subtotalPersonnes += parseFloat(emissionCell.textContent);
       });
 
       document.querySelectorAll("tr.row-transport.marchandise").forEach(row => {
         const emissionCell = row.querySelector(".emission-result");
-        if (emissionCell) {
-          subtotalMarchandises += parseFloat(emissionCell.textContent);
-        }
+        if (emissionCell) subtotalMarchandises += parseFloat(emissionCell.textContent);
       });
 
       document.getElementById("subtotal-personnes").textContent = subtotalPersonnes.toFixed(2);
@@ -195,23 +222,17 @@
       document.getElementById("total-transport").textContent = (subtotalPersonnes + subtotalMarchandises).toFixed(2);
     }
 
+    function saveTransportEmission() {
+      const total = parseFloat(document.getElementById("total-transport").textContent) || 0;
+      const data = JSON.parse(localStorage.getItem("emissionData") || "{}");
+      data.transport = total;
+      localStorage.setItem("emissionData", JSON.stringify(data));
+    }
 
-
-
-function saveTransportEmission() {
-  const total = parseFloat(document.getElementById("total-transport").textContent) || 0;
-  const data = JSON.parse(localStorage.getItem("emissionData") || "{}");
-  data.transport = total;
-  localStorage.setItem("emissionData", JSON.stringify(data));
-}
-
-// Enregistrer avant de passer à l'étape suivante
-document.getElementById("next-step").addEventListener("click", function () {
-  saveTransportEmission();
-  window.location.href = "/energie";
-});
-
-
+    document.getElementById("next-step").addEventListener("click", function () {
+      saveTransportEmission();
+      window.location.href = "/energie";
+    });
   </script>
 </body>
 </html>
