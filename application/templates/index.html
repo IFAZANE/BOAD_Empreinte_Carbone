@@ -1,184 +1,154 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>BOAD - Engagement Climat</title>
   <style>
-    :root {
-      --primary: #a71930;
-      --secondary: #d4af37;
-      --white: #fff;
-      --text-dark: #222;
-      --shadow-dark: rgba(0, 0, 0, 0.2);
-    }
-
-    * {
-      box-sizing: border-box;
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: #fdfcf9;
+      color: #333;
     }
 
     body {
-      margin: 0;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      color: var(--text-dark);
-      background: linear-gradient(135deg, #fff9f9, #f5f5f5);
-      position: relative;
-      min-height: 100vh;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      width: 120%;
-      height: 120%;
-      background: url("{{ url_for('static', filename='logo-boad.webp') }}") no-repeat center center;
-      background-size: contain;
-      opacity: 0.05;
-      transform: translate(-50%, -50%);
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    .overlay {
-      position: relative;
-      z-index: 1;
-      text-align: center;
-      padding: 3rem 1.5rem;
-      background-color: rgba(255, 255, 255, 0.95);
       display: flex;
       flex-direction: column;
-      align-items: center;
     }
 
-    .logo {
-      width: 240px;
-      margin-bottom: 1.8rem;
-      filter: drop-shadow(2px 2px 6px rgba(0, 0, 0, 0.15));
-    }
-
-    h1 {
-      color: var(--primary);
-      font-size: 2.2rem;
-      margin-bottom: 0.8rem;
-    }
-
-    .flags {
+    .main-content {
+      flex: 1;
       display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background-color: #a00000;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       flex-wrap: wrap;
-      justify-content: center;
-      gap: 1rem;
-      margin: 1.5rem 0;
     }
 
-    .flags img {
-      width: 55px;
-      border-radius: 5px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-      filter: grayscale(40%);
-      transition: all 0.3s ease;
+    header img {
+      height: 60px;
     }
 
-    .flags img:hover {
-      filter: grayscale(0%);
-      transform: scale(1.1);
+    header h1 {
+      color: white;
+      font-size: 1.8rem;
+      margin: 0 auto;
+      flex-grow: 1;
+      text-align: center;
     }
 
-    p {
-      max-width: 800px;
-      font-size: 1.1rem;
-      line-height: 1.6;
-      margin-bottom: 1.2rem;
+    .impact-message {
+      text-align: center;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, #a00000, #006400);
+      color: white;
+      font-size: 1.6rem;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
-    .btn {
-      background-color: var(--secondary);
-      color: var(--text-dark);
-      font-weight: 600;
-      padding: 1rem 2.2rem;
-      font-size: 1.1rem;
-      border-radius: 10px;
+    .carousel-container {
+      max-width: 1000px;
+      margin: 30px auto;
+      overflow: hidden;
+      position: relative;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      background: #ffffff;
+    }
+
+    .carousel-track {
+      display: flex;
+      animation: slide 20s linear infinite;
+    }
+
+    .carousel-track img {
+      width: 100%;
+      max-width: 200px;
+      object-fit: contain;
+      margin: 0 10px;
+    }
+
+    @keyframes slide {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+
+    .carbon-eval-link {
+      text-align: center;
+      margin: 50px 0;
+    }
+
+    .carbon-eval-link a {
+      background-color: #a00000;
+      color: white;
+      padding: 15px 35px;
+      font-size: 1.4rem;
+      border-radius: 35px;
       text-decoration: none;
-      box-shadow: 0 6px 16px rgba(193, 156, 45, 0.5);
-      transition: all 0.3s ease;
-      margin: 2rem 0;
+      font-weight: bold;
+      transition: background-color 0.3s ease, transform 0.2s;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
 
-    .btn:hover {
-      background-color: #b29226;
-      transform: scale(1.05);
-    }
-
-    .citation {
-      font-style: italic;
-      font-size: 1rem;
-      color: var(--primary);
-      border-left: 4px solid var(--secondary);
-      padding-left: 1rem;
-      margin-top: 1.5rem;
+    .carbon-eval-link a:hover {
+      background-color: #006400;
+      transform: scale(1.07);
     }
 
     footer {
       text-align: center;
-      font-size: 0.9rem;
-      color: #777;
-      padding: 1.5rem 1rem;
-      background: #f3f3f3;
-      margin-top: auto;
-    }
-
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 1.6rem;
-      }
-
-      p {
-        font-size: 1rem;
-      }
-
-      .flags img {
-        width: 42px;
-      }
-
-      .btn {
-        width: 100%;
-      }
+      padding: 20px;
+      background-color: #c9a200; /* Or BOAD */
+      color: white;
+      font-weight: bold;
+      font-size: 1rem;
+      letter-spacing: 0.5px;
     }
   </style>
 </head>
 
 <body>
-  <div class="overlay">
-    <img src="{{ url_for('static', filename='logo-boad.webp') }}" alt="Logo BOAD" class="logo" />
 
-    <h1>Pour un développement bas carbone</h1>
+  <div class="main-content">
+    <header>
+      <img src="{{ url_for('static', filename='logo-boad.webp') }}" alt="Logo BOAD" class="logo" />
+      <h1>BOAD - Ensemble pour un avenir durable</h1>
+    </header>
 
-    <p>
-      La BOAD soutient activement les projets alignés avec les Objectifs de Développement Durable et les Accords de Paris.
-      Cet outil permet d’estimer l’empreinte carbone des projets financés dans l’espace UEMOA.
-    </p>
+    <section class="impact-message">
+      La BOAD réaffirme son engagement pour la réduction de l'empreinte carbone en Afrique de l’Ouest.
+    </section>
 
-    <div class="flags">
-      <img src="{{ url_for('static', filename='images/benin.webp') }}" alt="Bénin" />
-      <img src="{{ url_for('static', filename='images/bf.webp') }}" alt="Burkina Faso" />
-      <img src="{{ url_for('static', filename='images/ci.webp') }}" alt="Côte d’Ivoire" />
-      <img src="{{ url_for('static', filename='images/gb.webp') }}" alt="Guinée-Bissau" />
-      <img src="{{ url_for('static', filename='images/mali.webp') }}" alt="Mali" />
-      <img src="{{ url_for('static', filename='images/niger.webp') }}" alt="Niger" />
-      <img src="{{ url_for('static', filename='images/senegal.webp') }}" alt="Sénégal" />
-      <img src="{{ url_for('static', filename='images/togo.webp') }}" alt="Togo" />
+    <section class="carousel-container">
+      <div class="carousel-track">
+        <img src="https://flagcdn.com/w320/bj.png" alt="Bénin">
+        <img src="https://flagcdn.com/w320/bf.png" alt="Burkina Faso">
+        <img src="https://flagcdn.com/w320/ci.png" alt="Côte d’Ivoire">
+        <img src="https://flagcdn.com/w320/gw.png" alt="Guinée-Bissau">
+        <img src="https://flagcdn.com/w320/ml.png" alt="Mali">
+        <img src="https://flagcdn.com/w320/ne.png" alt="Niger">
+        <img src="https://flagcdn.com/w320/sn.png" alt="Sénégal">
+        <img src="https://flagcdn.com/w320/tg.png" alt="Togo">
+      </div>
+    </section>
+
+    <div class="carbon-eval-link">
+      <a href="/transport">🌿 Évaluer l'empreinte carbone</a>
     </div>
-
-    <a href="{{ url_for('transport') }}" class="btn">Évaluer l'empreinte carbone</a>
-
-    <div class="citation">"Investir aujourd’hui pour un avenir durable."</div>
   </div>
 
   <footer>
-    &copy; {{ current_year }} BOAD - Banque Ouest Africaine de Développement
+    © 2025 BOAD - Banque Ouest Africaine de Développement. Tous droits réservés.
   </footer>
-</body>
 
+</body>
 </html>
