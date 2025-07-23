@@ -44,9 +44,9 @@
 </head>
 <body>
   <div class="container">
-<div class="quit-button">
-  <button onclick="window.location.href='/'" class="styled-button">Quitter</button>
-</div>
+    <div class="quit-button">
+      <button onclick="clearDataAndQuit()" class="styled-button">Quitter</button>
+    </div>
 
     <h2>Déchets – Émissions de CO₂</h2>
 
@@ -79,6 +79,7 @@
   </div>
 
   <script>
+    // Données déchets fournies par le backend Flask
     const dechets = {{ dechets | tojson | safe }};
 
     function addDechetRow() {
@@ -175,6 +176,11 @@
       const data = JSON.parse(localStorage.getItem("emissionData") || "{}");
       data.dechets = total;
       localStorage.setItem("emissionData", JSON.stringify(data));
+    }
+
+    function clearDataAndQuit() {
+      localStorage.clear();
+      window.location.href = "/";
     }
 
     document.getElementById("next-step").addEventListener("click", function () {
