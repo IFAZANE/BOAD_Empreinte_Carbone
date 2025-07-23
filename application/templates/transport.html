@@ -36,15 +36,66 @@
       min-height: 1.2em;
     }
 
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+    }
+
+    .header-bar img {
+      height: 60px;
+    }
+
+     .logo-container {
+      text-align: center;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+    .logo-container img {
+      max-height: 60px;
+    }
+
     .quit-button {
       margin-bottom: 10px;
+    }
+
+    .styled-button {
+      padding: 8px 16px;
+      background-color: #a71930;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .styled-button:hover {
+      background-color: #891625;
+    }
+
+    .add-buttons {
+      margin: 10px 0;
+    }
+
+    .next-step {
+      margin-top: 20px;
+    }
+
+    .container {
+      padding: 0 15px;
+      max-width: 1100px;
+      margin: 0 auto;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="quit-button">
-      <button onclick="window.location.href='/'" class="styled-button">Quitter</button>
+    <!-- En-tête avec logo et bouton Quitter -->
+    <div class="header-bar">
+
+      <div class="quit-button">
+        <button onclick="handleQuit()" class="styled-button">Quitter</button>
+      </div>
     </div>
 
     <h2>Transport – Émissions de CO₂</h2>
@@ -54,6 +105,7 @@
       <button onclick="addTransportRow('marchandise')">➕ Ajouter un transport de marchandises</button>
     </div>
 
+    <!-- Tableau des transports -->
     <table id="transportTable" aria-label="Tableau des transports et émissions">
       <thead>
         <tr>
@@ -77,26 +129,30 @@
     <div id="enginDescription"></div>
 
     <div class="next-step">
-      <button type="button" id="next-step">Étape suivante →</button>
+      <button type="button" id="next-step" class="styled-button">Étape suivante →</button>
     </div>
   </div>
 
+  <!-- Script JS -->
   <script>
     const engins = {{ engins | tojson | safe }};
 
-    function addTransportRow(typeTransport) {
+    function handleQuit() {
+      localStorage.removeItem("emissionData");
+      window.location.href = "/";
+    }
+
+    function addTransportRow(typeTransport, savedData) {
       const tbody = document.getElementById("transportBody");
       const sectionClass = typeTransport === "personne" ? "personne" : "marchandise";
 
       const row = document.createElement("tr");
       row.className = `row-transport ${sectionClass}`;
 
-      // Type de transport
       const tdType = document.createElement("td");
       tdType.textContent = typeTransport === "personne" ? "Personnes" : "Marchandises";
       row.appendChild(tdType);
 
-      // Catégorie d'engin
       const tdCategorie = document.createElement("td");
       const selectCategorie = document.createElement("select");
       selectCategorie.innerHTML = `<option value="">-- Choisir --</option>`;
@@ -109,14 +165,12 @@
       tdCategorie.appendChild(selectCategorie);
       row.appendChild(tdCategorie);
 
-      // Engin
       const tdEngin = document.createElement("td");
       const selectEngin = document.createElement("select");
       selectEngin.innerHTML = `<option value="">-- Choisir un engin --</option>`;
       tdEngin.appendChild(selectEngin);
       row.appendChild(tdEngin);
 
-      // Nombre
       const tdNombre = document.createElement("td");
       const inputNombre = document.createElement("input");
       inputNombre.type = "number";
@@ -125,7 +179,6 @@
       tdNombre.appendChild(inputNombre);
       row.appendChild(tdNombre);
 
-      // Distance
       const tdDistance = document.createElement("td");
       const inputDistance = document.createElement("input");
       inputDistance.type = "number";
@@ -134,7 +187,6 @@
       tdDistance.appendChild(inputDistance);
       row.appendChild(tdDistance);
 
-      // Résultat
       const tdResult = document.createElement("td");
       const spanResult = document.createElement("span");
       spanResult.className = "emission-result";
@@ -142,7 +194,6 @@
       tdResult.appendChild(spanResult);
       row.appendChild(tdResult);
 
-      // Choix catégorie
       selectCategorie.addEventListener("change", () => {
         const cat = selectCategorie.value;
         selectEngin.innerHTML = `<option value="">-- Choisir un engin --</option>`;
@@ -152,8 +203,8 @@
             opt.value = item.nom;
             opt.dataset.factor = item.facteur;
             opt.dataset.description = item.description || `Aucune description disponible`;
-            opt.textContent = `${item.nom}`;
-            opt.title = item.description || `Aucune description disponible`; // ✅ Mise à jour ici
+            opt.textContent = item.nom;
+            opt.title = item.description || `Aucune description disponible`;
             selectEngin.appendChild(opt);
           });
         }
@@ -161,7 +212,6 @@
         document.getElementById("enginDescription").textContent = "";
       });
 
-      // Choix engin
       selectEngin.addEventListener("change", () => {
         calculateEmission(row);
         const descDiv = document.getElementById("enginDescription");
@@ -178,6 +228,19 @@
         if (inputDistance.value < 0) inputDistance.value = 0;
         calculateEmission(row);
       });
+
+      if (savedData) {
+        selectCategorie.value = savedData.categorie || "";
+        selectCategorie.dispatchEvent(new Event("change"));
+
+        setTimeout(() => {
+          selectEngin.value = savedData.engin || "";
+          selectEngin.dispatchEvent(new Event("change"));
+          inputNombre.value = savedData.nombre ?? 0;
+          inputDistance.value = savedData.distance ?? 0;
+          calculateEmission(row);
+        }, 50);
+      }
 
       const insertBefore = document.querySelector(`.subtotal-row.${sectionClass}`);
       tbody.insertBefore(row, insertBefore);
@@ -223,15 +286,43 @@
     }
 
     function saveTransportEmission() {
+      const rows = document.querySelectorAll("tr.row-transport");
+      const transports = [];
+
+      rows.forEach(row => {
+        const typeTransport = row.classList.contains("personne") ? "personne" : "marchandise";
+        const categorie = row.querySelector("td:nth-child(2) select").value;
+        const enginSelect = row.querySelector("td:nth-child(3) select");
+        const engin = enginSelect.value;
+        const facteur = parseFloat(enginSelect.selectedOptions[0]?.dataset?.factor) || 0;
+        const description = enginSelect.selectedOptions[0]?.dataset?.description || "";
+        const nombre = parseFloat(row.querySelector("td:nth-child(4) input").value) || 0;
+        const distance = parseFloat(row.querySelector("td:nth-child(5) input").value) || 0;
+
+        if (categorie && engin && nombre && distance) {
+          transports.push({ typeTransport, categorie, engin, facteur, description, nombre, distance });
+        }
+      });
+
       const total = parseFloat(document.getElementById("total-transport").textContent) || 0;
       const data = JSON.parse(localStorage.getItem("emissionData") || "{}");
       data.transport = total;
+      data.transportRows = transports;
       localStorage.setItem("emissionData", JSON.stringify(data));
     }
 
     document.getElementById("next-step").addEventListener("click", function () {
       saveTransportEmission();
       window.location.href = "/energie";
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const data = JSON.parse(localStorage.getItem("emissionData") || "{}");
+      if (data.transportRows && data.transportRows.length) {
+        data.transportRows.forEach(rowData => {
+          addTransportRow(rowData.typeTransport, rowData);
+        });
+      }
     });
   </script>
 </body>
