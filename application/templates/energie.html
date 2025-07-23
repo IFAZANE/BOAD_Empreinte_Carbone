@@ -25,13 +25,46 @@
     select, input[type="number"] {
       width: 100%;
     }
+    .logo-container {
+      text-align: center;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+    .logo-container img {
+      max-height: 60px;
+    }
+    .quit-button {
+      text-align: right;
+      margin-bottom: 10px;
+    }
+    .styled-button {
+      background-color: #a71930;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .styled-button:hover {
+      background-color: #881522;
+    }
+    .add-buttons {
+      margin: 15px 0;
+    }
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
+
     <!-- Bouton Quitter -->
     <div class="quit-button">
-      <button onclick="window.location.href='/'" class="styled-button">Quitter</button>
+      <button onclick="handleQuit()" class="styled-button">Quitter</button>
     </div>
 
     <h2>Énergie – Émissions de CO₂</h2>
@@ -50,8 +83,10 @@
         </tr>
       </thead>
       <tbody id="energieBody">
-        <tr class="subtotal-row"><td colspan="3">Sous-total énergie</td><td><span id="subtotal-energie">0.00</span> kg CO₂</td></tr>
-        <tr class="total-row"><td colspan="3">Total</td><td><span id="total-energie">0.00</span> kg CO₂</td></tr>
+        <tr class="total-row">
+          <td colspan="3">Total</td>
+          <td><span id="total-energie">0.00</span> kg CO₂</td>
+        </tr>
       </tbody>
     </table>
 
@@ -69,7 +104,12 @@
   <script>
     const energies = {{ energies | tojson | safe }};
 
-    function addEnergyRow() {
+    function handleQuit() {
+      localStorage.removeItem("emissionData");
+      window.location.href = "/";
+    }
+
+    function addEnergyRow(savedData) {
       const tbody = document.getElementById("energieBody");
       const row = document.createElement("tr");
       row.className = "row-energie";
@@ -113,7 +153,7 @@
       row.appendChild(tdEmission);
 
       select.addEventListener("change", () => {
-        tdUnite.textContent = select.selectedOptions[0].dataset.unite || "-";
+        tdUnite.textContent = select.selectedOptions[0]?.dataset.unite || "-";
         calculateEmission(row);
       });
 
@@ -122,8 +162,17 @@
         calculateEmission(row);
       });
 
-      const insertBefore = document.querySelector(".subtotal-row");
-      tbody.insertBefore(row, insertBefore);
+      if (savedData) {
+        select.value = savedData.typeEnergie || "";
+        select.dispatchEvent(new Event("change"));
+        setTimeout(() => {
+          input.value = savedData.consommation ?? 0;
+          calculateEmission(row);
+        }, 50);
+      }
+
+      const totalRow = document.querySelector(".total-row");
+      tbody.insertBefore(row, totalRow);
     }
 
     function calculateEmission(row) {
@@ -131,7 +180,7 @@
       const input = row.querySelector("input");
       const output = row.querySelector(".emission-result");
 
-      const facteur = parseFloat(select.selectedOptions[0]?.dataset?.factor);
+      const facteur = parseFloat(select.selectedOptions[0]?.dataset.factor);
       const quantite = parseFloat(input.value);
 
       if (!isNaN(facteur) && !isNaN(quantite)) {
@@ -141,24 +190,39 @@
         output.textContent = "0.00";
       }
 
-      updateSubtotals();
+      updateTotal();
     }
 
-    function updateSubtotals() {
-      let subtotal = 0;
+    function updateTotal() {
+      let total = 0;
       document.querySelectorAll("tr.row-energie").forEach(row => {
         const emission = parseFloat(row.querySelector(".emission-result").textContent);
-        if (!isNaN(emission)) subtotal += emission;
+        if (!isNaN(emission)) total += emission;
       });
 
-      document.getElementById("subtotal-energie").textContent = subtotal.toFixed(2);
-      document.getElementById("total-energie").textContent = subtotal.toFixed(2);
+      document.getElementById("total-energie").textContent = total.toFixed(2);
     }
 
     function saveEnergieEmission() {
+      const rows = document.querySelectorAll("tr.row-energie");
+      const energieData = [];
+
+      rows.forEach(row => {
+        const select = row.querySelector("select");
+        const input = row.querySelector("input");
+
+        const typeEnergie = select.value;
+        const consommation = parseFloat(input.value) || 0;
+
+        if(typeEnergie && consommation > 0) {
+          energieData.push({ typeEnergie, consommation });
+        }
+      });
+
       const total = parseFloat(document.getElementById("total-energie").textContent) || 0;
       const data = JSON.parse(localStorage.getItem("emissionData") || "{}");
       data.energie = total;
+      data.energieRows = energieData;
       localStorage.setItem("emissionData", JSON.stringify(data));
     }
 
@@ -170,6 +234,15 @@
     document.getElementById("prev-step").addEventListener("click", function () {
       saveEnergieEmission();
       window.location.href = "/transport";
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const data = JSON.parse(localStorage.getItem("emissionData") || "{}");
+      if (data.energieRows && data.energieRows.length) {
+        data.energieRows.forEach(rowData => {
+          addEnergyRow(rowData);
+        });
+      }
     });
   </script>
 </body>
