@@ -18,8 +18,8 @@ def get_engins():
     types = ["moto", "voiture", "avion", "bateau", "train"]
     engins = {}
     for t in types:
-        cur.execute(f"SELECT nom, emission FROM {t} ORDER BY nom;")
-        engins[t] = [{"nom": r[0], "facteur": r[1]} for r in cur.fetchall()]
+        cur.execute(f"SELECT nom, emission, description FROM {t} ORDER BY nom;")
+        engins[t] = [{"nom": r[0], "facteur": r[1], "description":r[2]} for r in cur.fetchall()]
     cur.close()
     conn.close()
     return engins
