@@ -142,13 +142,19 @@
     </section>
 
     <div class="carbon-eval-link">
-      <a href="/transport">🌿 Évaluer l'empreinte carbone</a>
+      <a href="/transport" onclick="clearData()">🌿 Évaluer l'empreinte carbone</a>
     </div>
   </div>
 
   <footer>
     © 2025 BOAD - Banque Ouest Africaine de Développement. Tous droits réservés.
   </footer>
+<script>
+  function clearData() {
+    localStorage.removeItem("emissionData");
+  }
+</script>
 
 </body>
+
 </html>
