@@ -29,10 +29,16 @@ def get_engins():
 def index():
     return render_template('index.html')
 
-@app.route("/transport")
+@app.route('/transport', methods=['GET', 'POST'])
 def transport():
     engins = get_engins()
-    return render_template("transport.html", engins=engins)
+    return render_template('transport.html', engins=engins, page='transport')
+
+
+# @app.route("/transport")
+# def transport():
+#     engins = get_engins()
+#     return render_template("transport.html", engins=engins)
 
 @app.route("/resultat", methods=["GET", "POST"])
 def resultat():
