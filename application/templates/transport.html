@@ -5,7 +5,91 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Interface Transport - Émissions CO₂</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
   <style>
+    /* (Ton CSS reste inchangé ici pour la clarté) */
+    :root {
+      --boad-red: #a71930;
+      --boad-red-dark: #891625;
+      --white: #fff;
+      --boad-yellow: #FFCC00;
+      --boad-yellow-dark: #e6b800;
+    }
+
+    body { margin: 0; font-family: Arial, sans-serif; }
+
+    .layout { display: flex; min-height: 100vh; }
+
+    nav {
+      width: 220px;
+      background-color: var(--boad-red);
+      color: var(--white);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .nav-top { padding-top: 30px; }
+
+    .logo-container {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo-container img { max-height: 60px; }
+
+    .menu-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 0 15px;
+    }
+
+    .menu-buttons a {
+      background-color: #c9a200;
+      color: var(--white);
+      padding: 12px;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+
+    .menu-buttons a:hover { background-color: #70121d; }
+
+    .menu-buttons a.active {
+      background-color: #c9a200;
+      font-weight: bolder;
+    }
+
+    .quit-container {
+      padding: 20px 15px;
+      background-color: #c9a200;
+    }
+
+    .styled-button {
+      padding: 10px 16px;
+      background-color: var(--boad-red-dark);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      width: 100%;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .styled-button:hover { background-color: #70121d; }
+
+    .main-content {
+      flex-grow: 1;
+      padding: 20px;
+      padding-bottom: 70px;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; }
+
     .total-row {
       position: sticky;
       bottom: 0;
@@ -29,111 +113,102 @@
       width: 100%;
     }
 
-    #enginDescription {
-      margin-top: 5px;
-      font-style: italic;
-      color: #555;
-      min-height: 1.2em;
-    }
-
-    .header-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 0;
-    }
-
-    .header-bar img {
-      height: 60px;
-    }
-
-     .logo-container {
-      text-align: center;
-      margin-top: 10px;
-      margin-bottom: 20px;
-    }
-    .logo-container img {
-      max-height: 60px;
-    }
-
-    .quit-button {
-      margin-bottom: 10px;
-    }
-
-    .styled-button {
-      padding: 8px 16px;
-      background-color: #a71930;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .styled-button:hover {
-      background-color: #891625;
-    }
-
     .add-buttons {
       margin: 10px 0;
     }
 
-    .next-step {
-      margin-top: 20px;
+    .fixed-nav-buttons {
+      position: fixed;
+      bottom: 0;
+      left: 220px;
+      right: 0;
+      background: #fff;
+      padding: 10px 20px;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      z-index: 1000;
     }
 
-    .container {
-      padding: 0 15px;
-      max-width: 1100px;
-      margin: 0 auto;
+    .fixed-nav-buttons button {
+      background-color: #c9a200;
+      color: #333;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 24px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      width: 140px;
+    }
+
+    .fixed-nav-buttons button:hover {
+      background-color: var(--boad-yellow-dark);
     }
   </style>
 </head>
-<body>
-  <div class="container">
-    <!-- En-tête avec logo et bouton Quitter -->
-    <div class="header-bar">
 
-      <div class="quit-button">
+<body>
+  <div class="layout">
+    <nav>
+      <div class="nav-top">
+        <div class="logo-container">
+          <img src="{{ url_for('static', filename='logo-boad.webp') }}" alt="Logo BOAD">
+        </div>
+        <div class="menu-buttons">
+          <a href="/">Accueil</a>
+          <a href="/transport" class="active">Transport</a>
+          <a href="/energie">Énergie</a>
+          <a href="/equipements">Équipements</a>
+          <a href="dechets">Déchets</a>
+          <a href="/resultat">Résultats</a>
+        </div>
+      </div>
+      <div class="quit-container">
         <button onclick="handleQuit()" class="styled-button">Quitter</button>
       </div>
-    </div>
+    </nav>
 
-    <h2>Transport – Émissions de CO₂</h2>
+    <div class="main-content">
+      <div class="container">
+        <h2>Transport – Émissions de CO₂</h2>
 
-    <div class="add-buttons">
-      <button onclick="addTransportRow('personne')">➕ Ajouter un transport de personnes</button>
-      <button onclick="addTransportRow('marchandise')">➕ Ajouter un transport de marchandises</button>
-    </div>
+        <div class="add-buttons">
+          <button onclick="addTransportRow('personne')">➕ Ajouter un transport de personnes</button>
+          <button onclick="addTransportRow('marchandise')">➕ Ajouter un transport de marchandises</button>
+        </div>
 
-    <!-- Tableau des transports -->
-    <table id="transportTable" aria-label="Tableau des transports et émissions">
-      <thead>
-        <tr>
-          <th>Type de Transport</th>
-          <th>Type d'engin</th>
-          <th>Caractéristiques</th>
-          <th>Nombre</th>
-          <th>Distance (km)</th>
-          <th>Émissions (kg CO₂)</th>
-        </tr>
-      </thead>
-      <tbody id="transportBody">
-        <tr class="section-title"><td colspan="6">Transport de personnes</td></tr>
-        <tr class="subtotal-row personne"><td colspan="4">Sous-total personnes</td><td colspan="2"><span id="subtotal-personnes">0.00</span> kg CO₂</td></tr>
-        <tr class="section-title"><td colspan="6">Transport de marchandises</td></tr>
-        <tr class="subtotal-row marchandise"><td colspan="4">Sous-total marchandises</td><td colspan="2"><span id="subtotal-marchandises">0.00</span> kg CO₂</td></tr>
-        <tr class="total-row"><td colspan="4">Total</td><td colspan="2"><span id="total-transport">0.00</span> kg CO₂</td></tr>
-      </tbody>
-    </table>
+        <table id="transportTable">
+          <thead>
+            <tr>
+              <th>Type de Transport</th>
+              <th>Type d'engin</th>
+              <th>Caractéristiques</th>
+              <th>Nombre</th>
+              <th>Distance (km)</th>
+              <th>Émissions (kg CO₂)</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="transportBody">
+            <tr class="section-title"><td colspan="7">Transport de personnes</td></tr>
+            <tr class="subtotal-row personne"><td colspan="4">Sous-total personnes</td><td colspan="2"><span id="subtotal-personnes">0.00</span> kg CO₂</td></tr>
+            <tr class="section-title"><td colspan="7">Transport de marchandises</td></tr>
+            <tr class="subtotal-row marchandise"><td colspan="4">Sous-total marchandises</td><td colspan="2"><span id="subtotal-marchandises">0.00</span> kg CO₂</td></tr>
+            <tr class="total-row"><td colspan="4">Total</td><td colspan="2"><span id="total-transport">0.00</span> kg CO₂</td></tr>
+          </tbody>
+        </table>
 
-    <div id="enginDescription"></div>
+        <div id="enginDescription"></div>
 
-    <div class="next-step">
-      <button type="button" id="next-step" class="styled-button">Étape suivante →</button>
+        <!-- Boutons Précédent / Suivant fixes en bas -->
+        <div class="fixed-nav-buttons">
+          <button id="next-step" type="button">Étape suivante →</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Script JS -->
   <script>
     const engins = {{ engins | tojson | safe }};
 
@@ -183,7 +258,7 @@
       const inputDistance = document.createElement("input");
       inputDistance.type = "number";
       inputDistance.min = 0;
-      inputDistance.step = 0.01;
+      inputDistance.step = 0.1;
       tdDistance.appendChild(inputDistance);
       row.appendChild(tdDistance);
 
@@ -193,6 +268,21 @@
       spanResult.textContent = "0.00";
       tdResult.appendChild(spanResult);
       row.appendChild(tdResult);
+
+      const tdAction = document.createElement("td");
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "🗑️";
+      deleteBtn.style.cursor = "pointer";
+      deleteBtn.style.border = "none";
+      deleteBtn.style.background = "transparent";
+      deleteBtn.style.fontSize = "18px";
+      deleteBtn.addEventListener("click", () => {
+        row.remove();
+        updateSubtotals();
+        saveTransportEmission();
+      });
+      tdAction.appendChild(deleteBtn);
+      row.appendChild(tdAction);
 
       selectCategorie.addEventListener("change", () => {
         const cat = selectCategorie.value;
@@ -210,6 +300,7 @@
         }
         calculateEmission(row);
         document.getElementById("enginDescription").textContent = "";
+        saveTransportEmission();
       });
 
       selectEngin.addEventListener("change", () => {
@@ -217,16 +308,19 @@
         const descDiv = document.getElementById("enginDescription");
         const selectedOption = selectEngin.selectedOptions[0];
         descDiv.textContent = selectedOption?.dataset?.description || "";
+        saveTransportEmission();
       });
 
       inputNombre.addEventListener("input", () => {
         if (inputNombre.value < 0) inputNombre.value = 0;
         calculateEmission(row);
+        saveTransportEmission();
       });
 
       inputDistance.addEventListener("input", () => {
         if (inputDistance.value < 0) inputDistance.value = 0;
         calculateEmission(row);
+        saveTransportEmission();
       });
 
       if (savedData) {
@@ -324,6 +418,8 @@
         });
       }
     });
+
+    window.addEventListener("beforeunload", saveTransportEmission);
   </script>
 </body>
 </html>
