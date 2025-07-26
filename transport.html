@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Interface Transport - Émissions CO₂</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+  <style>
+    :root {
+      --boad-red: #a71930;
+      --boad-red-dark: #891625;
+      --white: #fff;
+      --boad-yellow: #FFCC00;
+      --boad-yellow-dark: #e6b800;
+    }
+
+    body { margin: 0; font-family: Arial, sans-serif; background: #fafafa; }
+
+    .layout { display: flex; min-height: 100vh; }
+
+    nav {
+      width: 220px;
+      background-color: var(--boad-red);
+      color: var(--white);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .nav-top { padding-top: 30px; }
+
+    .logo-container {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo-container img { max-height: 60px; }
+
+    .menu-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 0 15px;
+    }
+
+    .menu-buttons a {
+      background-color: #c9a200;
+      color: var(--white);
+      padding: 12px;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      transition: background 0.3s ease;
+      user-select: none;
+    }
+
+    .menu-buttons a:hover { background-color: #70121d; }
+
+    .menu-buttons a.active {
+      background-color: #c9a200;
+      font-weight: bolder;
+    }
+
+    .quit-container {
+      padding: 20px 15px;
+      background-color: #c9a200;
+    }
+
+    .styled-button {
+      padding: 10px 16px;
+      background-color: var(--boad-red-dark);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      width: 100%;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+
+    .styled-button:hover { background-color: #70121d; }
+
+    .main-content {
+      flex-grow: 1;
+      padding: 20px;
+      padding-bottom: 70px;
+      background: white;
+      box-shadow: 0 0 10px rgb(0 0 0 / 0.1);
+      border-radius: 8px;
+      margin: 20px;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    h2 {
+      color: var(--boad-red);
+      margin-bottom: 20px;
+    }
+
+    .add-buttons {
+      margin: 10px 0 20px;
+      display: flex;
+      gap: 15px;
+    }
+
+    .add-buttons button {
+      background-color: var(--boad-yellow);
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #333;
+      transition: background-color 0.3s ease;
+      user-select: none;
+      flex-grow: 1;
+    }
+
+    .add-buttons button:hover {
+      background-color: var(--boad-yellow-dark);
+      color: #111;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      box-shadow: 0 0 10px rgb(0 0 0 / 0.05);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background-color: var(--boad-red);
+      color: white;
+      user-select: none;
+    }
+
+    tr.section-title td {
+      background-color: #f4f4f4;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--boad-red-dark);
+      user-select: none;
+    }
+
+    tr.subtotal-row td {
+      background-color: #fff8dc;
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--boad-red-dark);
+      user-select: none;
+    }
+
+    tr.total-row td {
+      background-color: var(--boad-red);
+      color: var(--white);
+      font-weight: bolder;
+      font-size: 16px;
+      user-select: none;
+    }
+
+    select, input[type="number"] {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+
+    select:focus, input[type="number"]:focus {
+      border-color: var(--boad-red);
+      outline: none;
+      box-shadow: 0 0 5px var(--boad-red);
+    }
+
+    .action-btn {
+      background: none;
+      border: none;
+      color: var(--boad-red);
+      font-size: 18px;
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.3s ease;
+    }
+
+    .action-btn:hover {
+      color: var(--boad-red-dark);
+    }
+
+    #enginDescription {
+      margin-top: 20px;
+      background: #fff3cc;
+      padding: 15px;
+      border-left: 6px solid var(--boad-yellow);
+      border-radius: 4px;
+      color: #5c3a00;
+      font-style: italic;
+      min-height: 50px;
+    }
+
+    /* Fixed bottom nav buttons */
+    .fixed-nav-buttons {
+      position: fixed;
+      bottom: 0;
+      left: 220px;
+      right: 0;
+      background: #fff;
+      padding: 10px 20px;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: flex-end;
+      z-index: 1000;
+    }
+
+    .fixed-nav-buttons button {
+      background-color: var(--boad-yellow);
+      color: #333;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 24px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      user-select: none;
+      min-width: 160px;
+    }
+
+    .fixed-nav-buttons button:hover {
+      background-color: var(--boad-yellow-dark);
+      color: #111;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="layout">
+    <nav>
+      <div class="nav-top">
+        <div class="logo-container">
+          <img src="{{ url_for('static', filename='logo-boad.webp') }}" alt="Logo BOAD" />
+        </div>
+        <div class="menu-buttons">
+          <a href="/">Accueil</a>
+          <a href="/transport" class="active">Transport</a>
+          <a href="/energie">Énergie</a>
+          <a href="/equipements">Équipements</a>
+          <a href="/autre">Autre</a>
+          <a href="/resultat">Résultats</a>
+        </div>
+      </div>
+      <div class="quit-container">
+        <button onclick="handleQuit()" class="styled-button">Quitter</button>
+      </div>
+    </nav>
+
+    <div class="main-content">
+      <div class="container">
+        <h2>Transport – Émissions de CO₂</h2>
+
+        <div class="add-buttons">
+          <button type="button" onclick="addTransportRow('scope 1')">➕ Ajouter transport Scope 1</button>
+          <button type="button" onclick="addTransportRow('scope 2')">➕ Ajouter transport Scope 2</button>
+          <button type="button" onclick="addTransportRow('scope 3')">➕ Ajouter transport Scope 3</button>
+        </div>
+
+        <table id="transportTable">
+          <thead>
+            <tr>
+              <th>Type de Transport</th>
+              <th>Type d'engin</th>
+              <th>Caractéristiques</th>
+              <th>Nombre</th>
+              <th>Distance (km)</th>
+              <th>Émissions (kg CO₂)</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="transportBody">
+            <!-- Contenu dynamique -->
+          </tbody>
+        </table>
+
+        <div id="enginDescription"></div>
+
+        <div class="fixed-nav-buttons">
+          <button id="next-step" type="button" onclick="suivant()">Étape suivante (1/4)→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+// Simulation des données engins fournies par backend (à remplacer par {{ engins | tojson }})
+const enginsData = {{ engins | tojson }};
+
+// Stockage dynamique des lignes de transport
+let transportRows = [];
+
+// Liste des scopes disponibles
+const scopes = Object.keys(enginsData); // ['scope 1', 'scope 2', 'scope 3']
+
+// Affiche la description d'un engin sélectionné
+function afficherDescription(description) {
+  const divDesc = document.getElementById('enginDescription');
+  divDesc.textContent = description || '';
+}
+
+// Affiche et met à jour le tableau
+function renderTable() {
+  const tbody = document.getElementById('transportBody');
+  tbody.innerHTML = '';
+
+  scopes.forEach(scope => {
+    // Titre section scope
+    const trTitle = document.createElement('tr');
+    trTitle.className = 'section-title';
+    const tdTitle = document.createElement('td');
+    tdTitle.colSpan = 7;
+    tdTitle.textContent = scope.charAt(0).toUpperCase() + scope.slice(1).replace('_', ' ');
+    trTitle.appendChild(tdTitle);
+    tbody.appendChild(trTitle);
+
+    // Lignes du scope
+    const rowsFiltered = transportRows.filter(r => r.scope === scope);
+    rowsFiltered.forEach((row, idx) => {
+      const tr = document.createElement('tr');
+
+      // Type de transport (personne ou marchandise)
+      const tdType = document.createElement('td');
+      tdType.textContent = row.typeTransport === 'personne' ? 'Personnes' : 'Marchandises';
+      tr.appendChild(tdType);
+
+      // Type d'engin (catégorie)
+      const tdEnginType = document.createElement('td');
+      const selectEnginType = document.createElement('select');
+      selectEnginType.innerHTML = `<option value="">-- Choisir une catégorie --</option>`;
+      if (enginsData[scope]) {
+        Object.keys(enginsData[scope]).forEach(cat => {
+          const opt = document.createElement('option');
+          opt.value = cat;
+          opt.textContent = cat;
+          if (cat === row.categorie) opt.selected = true;
+          selectEnginType.appendChild(opt);
+        });
+      }
+      selectEnginType.onchange = e => {
+        row.categorie = e.target.value;
+        row.engin = '';
+        row.facteur = 0;
+        afficherDescription('');
+        renderTable();
+      };
+      tdEnginType.appendChild(selectEnginType);
+      tr.appendChild(tdEnginType);
+
+      // Engin select
+      const tdEngin = document.createElement('td');
+      const selectEngin = document.createElement('select');
+      selectEngin.innerHTML = `<option value="">-- Choisir un engin --</option>`;
+      if (row.categorie && enginsData[scope] && enginsData[scope][row.categorie]) {
+        enginsData[scope][row.categorie].forEach(enginObj => {
+          const opt = document.createElement('option');
+          opt.value = enginObj.nom;
+          opt.textContent = enginObj.nom;
+          if (enginObj.nom === row.engin) opt.selected = true;
+          selectEngin.appendChild(opt);
+        });
+      }
+      selectEngin.onchange = e => {
+        const selectedNom = e.target.value;
+        row.engin = selectedNom;
+        if (row.categorie && scope) {
+          const eng = enginsData[scope][row.categorie].find(en => en.nom === selectedNom);
+          row.facteur = eng ? eng.facteur : 0;
+          row.description = eng ? eng.description : '';
+          afficherDescription(row.description);
+        }
+        renderTable();
+      };
+      tdEngin.appendChild(selectEngin);
+      tr.appendChild(tdEngin);
+
+      // Nombre input
+      const tdNombre = document.createElement('td');
+      const inputNombre = document.createElement('input');
+      inputNombre.type = 'number';
+      inputNombre.min = '1';
+      inputNombre.value = row.nombre || 1;
+      inputNombre.style.width = '70px';
+      inputNombre.oninput = e => {
+        const val = parseInt(e.target.value);
+        row.nombre = val > 0 ? val : 1;
+        renderTable();
+      };
+      tdNombre.appendChild(inputNombre);
+      tr.appendChild(tdNombre);
+
+      // Distance input
+      const tdDistance = document.createElement('td');
+      const inputDistance = document.createElement('input');
+      inputDistance.type = 'number';
+      inputDistance.min = '0';
+      inputDistance.step = '0.1';
+      inputDistance.value = row.distance || 0;
+      inputDistance.style.width = '100px';
+      inputDistance.oninput = e => {
+        const val = parseFloat(e.target.value);
+        row.distance = val >= 0 ? val : 0;
+        renderTable();
+      };
+      tdDistance.appendChild(inputDistance);
+      tr.appendChild(tdDistance);
+
+      // Émissions calculées
+      const tdEmissions = document.createElement('td');
+      const emissions = (row.facteur || 0) * (row.distance || 0) * (row.nombre || 1);
+      tdEmissions.textContent = emissions.toFixed(2);
+      tr.appendChild(tdEmissions);
+
+      // Action supprimer
+      const tdAction = document.createElement('td');
+      const btnDelete = document.createElement('button');
+      btnDelete.className = 'action-btn';
+      btnDelete.title = 'Supprimer cette ligne';
+      btnDelete.textContent = '🗑️';
+      btnDelete.onclick = () => {
+        transportRows.splice(transportRows.indexOf(row), 1);
+        afficherDescription('');
+        renderTable();
+      };
+      tdAction.appendChild(btnDelete);
+      tr.appendChild(tdAction);
+
+      tbody.appendChild(tr);
+    });
+
+    // Sous-total par scope
+    const sousTotal = rowsFiltered.reduce((acc, r) => acc + ((r.facteur || 0) * (r.distance || 0) * (r.nombre || 1)), 0);
+    const trSubtotal = document.createElement('tr');
+    trSubtotal.className = 'subtotal-row ' + scope.replace(' ', '-');
+    const tdSubtotal = document.createElement('td');
+    tdSubtotal.colSpan = 4;
+    tdSubtotal.textContent = `Sous-total ${scope.charAt(0).toUpperCase() + scope.slice(1).replace('_', ' ')}`;
+    trSubtotal.appendChild(tdSubtotal);
+    const tdVal = document.createElement('td');
+    tdVal.colSpan = 2;
+    tdVal.innerHTML = `<span>${sousTotal.toFixed(2)}</span> kg CO₂`;
+    trSubtotal.appendChild(tdVal);
+    tbody.appendChild(trSubtotal);
+  });
+
+  // Total général
+  const total = transportRows.reduce((acc, r) => acc + ((r.facteur || 0) * (r.distance || 0) * (r.nombre || 1)), 0);
+  const trTotal = document.createElement('tr');
+  trTotal.className = 'total-row';
+  const tdTotal = document.createElement('td');
+  tdTotal.colSpan = 4;
+  tdTotal.textContent = 'Total';
+  trTotal.appendChild(tdTotal);
+  const tdTotalVal = document.createElement('td');
+  tdTotalVal.colSpan = 2;
+  tdTotalVal.innerHTML = `<span>${total.toFixed(2)}</span> kg CO₂`;
+  trTotal.appendChild(tdTotalVal);
+  tbody.appendChild(trTotal);
+
+  // Sauvegarder dans sessionStorage à chaque rendu
+  sessionStorage.setItem('transportRows', JSON.stringify(transportRows));
+
+  // Sauvegarde dans localStorage après chaque mise à jour
+  const emissionData = JSON.parse(localStorage.getItem("emissionData")) || {};
+  emissionData.transport = total;
+
+  const autresDetails = (emissionData.details || []).filter(item => item.categorie !== "Transport");
+  const nouveauxDetails = transportRows.map(row => ({
+    nom: row.engin,
+    categorie: "Transport",
+    scope: row.scope,
+    facteur: row.facteur,
+    unite: "kg/km"
+  }));
+  emissionData.details = [...autresDetails, ...nouveauxDetails];
+
+  localStorage.setItem("emissionData", JSON.stringify(emissionData));
+}
+
+// Ajoute une ligne de transport dans un scope donné
+function addTransportRow(scope) {
+  const defaultType = 'personne';
+  transportRows.push({
+    typeTransport: defaultType,
+    scope: scope,
+    categorie: '',
+    engin: '',
+    facteur: 0,
+    description: '',
+    nombre: 1,
+    distance: 0
+  });
+  afficherDescription('');
+  renderTable();
+}
+
+// Bouton "Étape suivante"
+function suivant() {
+  const totalEmission = transportRows.reduce((acc, row) => {
+    return acc + ((row.facteur || 0) * (row.distance || 0) * (row.nombre || 1));
+  }, 0);
+
+  // Charger ou initialiser l'objet emissionData
+  const emissionData = JSON.parse(localStorage.getItem("emissionData")) || {};
+
+  // Mise à jour de la partie transport
+  emissionData.transport = totalEmission;
+
+  // Mise à jour des détails (on remplace les anciens détails liés au transport uniquement)
+  const autresDetails = (emissionData.details || []).filter(item => item.categorie !== "Transport");
+
+  const nouveauxDetails = transportRows.map(row => ({
+    nom: row.engin,
+    categorie: "Transport",
+    scope: row.scope,
+    facteur: row.facteur,
+    unite: "kg/km"
+  }));
+
+  emissionData.details = [...autresDetails, ...nouveauxDetails];
+
+  localStorage.setItem("emissionData", JSON.stringify(emissionData));
+
+  // Redirection vers la page énergie
+  window.location.href = "{{ url_for('energie') }}";
+}
+
+// Bouton quitter (exemple simple)
+function handleQuit() {
+
+    window.location.href = "/";
+
+}
+
+// Initialisation au chargement
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = sessionStorage.getItem('transportRows');
+  if (saved) {
+    transportRows = JSON.parse(saved);
+  }
+  renderTable();
+});
+
+</script>
+
+</body>
+</html>

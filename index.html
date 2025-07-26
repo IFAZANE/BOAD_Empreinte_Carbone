@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BOAD - Engagement Climat</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: #fdfcf9;
+      color: #333;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background-color: #a00000;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    header img {
+      height: 60px;
+    }
+
+    header h1 {
+      color: white;
+      font-size: 1.8rem;
+      margin: 0 auto;
+      flex-grow: 1;
+      text-align: center;
+    }
+
+    .impact-message {
+      text-align: center;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, #a00000, #006400);
+      color: white;
+      font-size: 1.6rem;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .carousel-container {
+      max-width: 1000px;
+      margin: 30px auto;
+      overflow: hidden;
+      position: relative;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      background: #ffffff;
+    }
+
+    .carousel-track {
+      display: flex;
+      animation: slide 20s linear infinite;
+    }
+
+    .carousel-track img {
+      width: 100%;
+      max-width: 200px;
+      object-fit: contain;
+      margin: 0 10px;
+    }
+
+    @keyframes slide {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+
+    .carbon-eval-link {
+      text-align: center;
+      margin: 50px auto 0;
+    }
+
+    .carbon-eval-link a {
+      background-color: #a00000;
+      color: white;
+      padding: 15px 35px;
+      font-size: 1.4rem;
+      border-radius: 35px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background-color 0.3s ease, transform 0.2s;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .carbon-eval-link a:hover {
+      background-color: #006400;
+      transform: scale(1.07);
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      background-color: #c9a200;
+      color: white;
+      font-weight: bold;
+      font-size: 1rem;
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="main-content">
+    <header>
+      <img src="{{ url_for('static', filename='logo-boad.webp') }}" alt="Logo BOAD" class="logo" />
+      <h1>BOAD - Pour chaque projet, un pas de moins vers le carbone</h1>
+    </header>
+
+    <section class="impact-message">
+      La BOAD réaffirme son engagement pour la réduction de l'empreinte carbone en Afrique de l’Ouest.
+    </section>
+
+    <section class="carousel-container">
+      <div class="carousel-track">
+        <img src="https://flagcdn.com/w320/bj.png" alt="Bénin">
+        <img src="https://flagcdn.com/w320/bf.png" alt="Burkina Faso">
+        <img src="https://flagcdn.com/w320/ci.png" alt="Côte d’Ivoire">
+        <img src="https://flagcdn.com/w320/gw.png" alt="Guinée-Bissau">
+        <img src="https://flagcdn.com/w320/ml.png" alt="Mali">
+        <img src="https://flagcdn.com/w320/ne.png" alt="Niger">
+        <img src="https://flagcdn.com/w320/sn.png" alt="Sénégal">
+        <img src="https://flagcdn.com/w320/tg.png" alt="Togo">
+      </div>
+    </section>
+
+    <div class="carbon-eval-link">
+      <a href="#" onclick="resetAllAndRedirect(event)">🌿 Évaluer l'empreinte carbone</a>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 BOAD - Banque Ouest Africaine de Développement. Tous droits réservés.
+  </footer>
+
+  <script>
+    function resetAllAndRedirect(event) {
+      event.preventDefault();
+      sessionStorage.clear();
+      localStorage.clear();
+      window.location.href = "/transport";
+    }
+  </script>
+
+</body>
+</html>
