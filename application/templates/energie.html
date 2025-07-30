@@ -14,15 +14,9 @@
       --boad-yellow-dark: #e6b800;
     }
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
+    body { margin: 0; font-family: Arial, sans-serif; background: #fafafa; }
 
-    .layout {
-      display: flex;
-      min-height: 100vh;
-    }
+    .layout { display: flex; min-height: 100vh; }
 
     nav {
       width: 220px;
@@ -33,18 +27,14 @@
       justify-content: space-between;
     }
 
-    .nav-top {
-      padding-top: 30px;
-    }
+    .nav-top { padding-top: 30px; }
 
     .logo-container {
       text-align: center;
       margin-bottom: 30px;
     }
 
-    .logo-container img {
-      max-height: 60px;
-    }
+    .logo-container img { max-height: 60px; }
 
     .menu-buttons {
       display: flex;
@@ -54,7 +44,7 @@
     }
 
     .menu-buttons a {
-      background-color: #c9a200; /* Or BOAD */
+      background-color: #c9a200;
       color: var(--white);
       padding: 12px;
       text-align: center;
@@ -62,20 +52,19 @@
       border-radius: 6px;
       font-weight: bold;
       transition: background 0.3s ease;
+      user-select: none;
     }
 
-    .menu-buttons a:hover {
-      background-color: #70121d;
-    }
+    .menu-buttons a:hover { background-color: #70121d; }
 
     .menu-buttons a.active {
-      background-color: #c9a200; /* Or BOAD */
+      background-color: #c9a200;
       font-weight: bolder;
     }
 
     .quit-container {
       padding: 20px 15px;
-      background-color: #c9a200; /* Or BOAD */
+      background-color: #c9a200;
     }
 
     .styled-button {
@@ -88,48 +77,135 @@
       font-weight: bold;
       cursor: pointer;
       transition: background-color 0.3s ease;
+      user-select: none;
     }
 
-    .styled-button:hover {
-      background-color: #70121d;
-    }
+    .styled-button:hover { background-color: #70121d; }
 
     .main-content {
       flex-grow: 1;
       padding: 20px;
       padding-bottom: 70px;
+      background: white;
+      box-shadow: 0 0 10px rgb(0 0 0 / 0.1);
+      border-radius: 8px;
+      margin: 20px;
     }
 
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    h2 {
+      color: var(--boad-red);
+      margin-bottom: 20px;
     }
 
-    .total-row {
-      position: sticky;
-      bottom: 0;
-      background: #f8f8f8;
+    .add-buttons {
+      margin: 10px 0 20px;
+      display: flex;
+      gap: 15px;
+    }
+
+    .add-buttons button {
+      background-color: var(--boad-yellow);
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
       font-weight: bold;
-      border-top: 2px solid #000;
+      cursor: pointer;
+      color: #333;
+      transition: background-color 0.3s ease;
+      user-select: none;
+      flex-grow: 1;
+    }
+
+    .add-buttons button:hover {
+      background-color: var(--boad-yellow-dark);
+      color: #111;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
+      box-shadow: 0 0 10px rgb(0 0 0 / 0.05);
+      border-radius: 6px;
+      overflow: hidden;
     }
 
     th, td {
-      padding: 8px;
-      border: 1px solid #ccc;
+      padding: 12px 15px;
+      border: 1px solid #ddd;
       text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background-color: var(--boad-red);
+      color: white;
+      user-select: none;
+    }
+
+    tr.section-title td {
+      background-color: #f4f4f4;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--boad-red-dark);
+      user-select: none;
+    }
+
+    tr.subtotal-row td {
+      background-color: #fff8dc;
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--boad-red-dark);
+      user-select: none;
+    }
+
+    tr.total-row td {
+      background-color: var(--boad-red);
+      color: var(--white);
+      font-weight: bolder;
+      font-size: 16px;
+      user-select: none;
     }
 
     select, input[type="number"] {
       width: 100%;
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
     }
 
-    .add-buttons {
-      margin: 10px 0;
+    select:focus, input[type="number"]:focus {
+      border-color: var(--boad-red);
+      outline: none;
+      box-shadow: 0 0 5px var(--boad-red);
+    }
+
+    .action-btn {
+      background: none;
+      border: none;
+      color: var(--boad-red);
+      font-size: 18px;
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.3s ease;
+    }
+
+    .action-btn:hover {
+      color: var(--boad-red-dark);
+    }
+
+    #enginDescription {
+      margin-top: 20px;
+      background: #fff3cc;
+      padding: 15px;
+      border-left: 6px solid var(--boad-yellow);
+      border-radius: 4px;
+      color: #5c3a00;
+      font-style: italic;
+      min-height: 50px;
     }
 
     .fixed-nav-buttons {
@@ -141,12 +217,12 @@
       padding: 10px 20px;
       box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-end;
       z-index: 1000;
     }
 
     .fixed-nav-buttons button {
-      background-color: #c9a200; /* Or BOAD */
+      background-color: var(--boad-yellow);
       color: #333;
       border: none;
       border-radius: 6px;
@@ -154,27 +230,30 @@
       font-weight: bold;
       cursor: pointer;
       transition: background-color 0.3s ease;
-      width: 140px;
+      user-select: none;
+      min-width: 160px;
     }
 
     .fixed-nav-buttons button:hover {
       background-color: var(--boad-yellow-dark);
+      color: #111;
     }
   </style>
 </head>
+
 <body>
   <div class="layout">
     <nav>
       <div class="nav-top">
         <div class="logo-container">
-          <img src="{{ url_for('static', filename='logo-boad.webp') }}" alt="Logo BOAD">
+          <img src="{{ url_for('static', filename='logo-boad.webp') }}" alt="Logo BOAD" />
         </div>
         <div class="menu-buttons">
           <a href="/">Accueil</a>
           <a href="/transport">Transport</a>
           <a href="/energie" class="active">Énergie</a>
           <a href="/equipements">Équipements</a>
-          <a href="/dechets">Déchets</a>
+          <a href="/autre">Autre</a>
           <a href="/resultat">Résultats</a>
         </div>
       </div>
@@ -188,196 +267,244 @@
         <h2>Énergie – Émissions de CO₂</h2>
 
         <div class="add-buttons">
-          <button onclick="addEnergyRow()">➕ Ajouter une source d'énergie</button>
+          <button type="button" onclick="addEnergyRow('scope_1')">➕ Ajouter énergie Scope 1</button>
+          <button type="button" onclick="addEnergyRow('scope_2')">➕ Ajouter énergie Scope 2</button>
+          <button type="button" onclick="addEnergyRow('scope_3')">➕ Ajouter énergie Scope 3</button>
         </div>
 
-        <table id="energieTable" aria-label="Tableau des consommations énergétiques et émissions">
+        <table id="energyTable">
           <thead>
             <tr>
+              <th>Catégorie</th>
               <th>Type d'énergie</th>
-              <th>Consommation</th>
-              <th>Unité</th>
+              <th>Quantité</th>
               <th>Émissions (kg CO₂)</th>
               <th>Action</th>
             </tr>
           </thead>
-          <tbody id="energieBody">
-            <tr class="total-row">
-              <td colspan="4">Total</td>
-              <td><span id="total-energie">0.00</span> kg CO₂</td>
-            </tr>
-          </tbody>
+          <tbody id="energyBody"></tbody>
         </table>
+
+        <div id="enginDescription"></div>
+
+<div class="fixed-nav-buttons" style="justify-content: space-between;">
+  <button type="button" onclick="precedent()">←(2/4) Étape précédente</button>
+  <button type="button" onclick="suivant()">Étape suivante (2/4)→</button>
+</div>
+
+
       </div>
     </div>
   </div>
+<script>
+  const enginsData = {{ engins_energie | tojson }};
+  let energyRows = [];
 
-  <div class="fixed-nav-buttons">
-    <button type="button" id="prev-step">← Précédent</button>
-    <button type="button" id="next-step">Étape suivante →</button>
-  </div>
+  const scopes = Object.keys(enginsData);
 
-  <script>
-    const energies = {{ energies | tojson | safe }};
+  function afficherDescription(description) {
+    document.getElementById('enginDescription').textContent = description || '';
+  }
 
-    function handleQuit() {
-      localStorage.removeItem("emissionData");
-      window.location.href = "/";
-    }
+  function renderTable() {
+    const tbody = document.getElementById('energyBody');
+    tbody.innerHTML = '';
 
-    function addEnergyRow(savedData) {
-      const tbody = document.getElementById("energieBody");
-      const row = document.createElement("tr");
-      row.className = "row-energie";
+    scopes.forEach(scope => {
+      const trTitle = document.createElement('tr');
+      trTitle.className = 'section-title';
+      const tdTitle = document.createElement('td');
+      tdTitle.colSpan = 5;
+      tdTitle.textContent = scope.replace('_', ' ').toUpperCase();
+      trTitle.appendChild(tdTitle);
+      tbody.appendChild(trTitle);
 
-      const tdType = document.createElement("td");
-      const select = document.createElement("select");
-      select.innerHTML = `<option value="">-- Choisir --</option>`;
+      const rowsFiltered = energyRows.filter(r => r.scope === scope);
+      rowsFiltered.forEach(row => {
+        const tr = document.createElement('tr');
 
-      Object.keys(energies).forEach(key => {
-        const energy = energies[key];
-        const opt = document.createElement("option");
-        opt.value = key;
-        opt.dataset.factor = energy.facteur;
-        opt.dataset.unite = energy.unite;
-        opt.textContent = `${key} (${energy.facteur} kgCO₂/${energy.unite})`;
-        opt.title = energy.description || `Facteur : ${energy.facteur} kgCO₂/${energy.unite}`;
-        select.appendChild(opt);
-      });
-
-      tdType.appendChild(select);
-      row.appendChild(tdType);
-
-      const tdQuantite = document.createElement("td");
-      const input = document.createElement("input");
-      input.type = "number";
-      input.min = 0;
-      input.step = 0.01;
-      tdQuantite.appendChild(input);
-      row.appendChild(tdQuantite);
-
-      const tdUnite = document.createElement("td");
-      tdUnite.className = "unite-cell";
-      tdUnite.textContent = "-";
-      row.appendChild(tdUnite);
-
-      const tdEmission = document.createElement("td");
-      const span = document.createElement("span");
-      span.className = "emission-result";
-      span.textContent = "0.00";
-      tdEmission.appendChild(span);
-      row.appendChild(tdEmission);
-
-      const tdAction = document.createElement("td");
-      const deleteBtn = document.createElement("button");
-      deleteBtn.textContent = "🗑️";
-      deleteBtn.title = "Supprimer cette ligne";
-      deleteBtn.style.cursor = "pointer";
-      deleteBtn.style.border = "none";
-      deleteBtn.style.background = "transparent";
-      deleteBtn.style.fontSize = "18px";
-
-      deleteBtn.addEventListener("click", () => {
-        row.remove();
-        updateTotal();
-        saveEnergieEmission();
-      });
-
-      tdAction.appendChild(deleteBtn);
-      row.appendChild(tdAction);
-
-      select.addEventListener("change", () => {
-        tdUnite.textContent = select.selectedOptions[0]?.dataset.unite || "-";
-        calculateEmission(row);
-      });
-
-      input.addEventListener("input", () => {
-        if (input.value < 0) input.value = 0;
-        calculateEmission(row);
-      });
-
-      if (savedData) {
-        select.value = savedData.typeEnergie || "";
-        select.dispatchEvent(new Event("change"));
-        setTimeout(() => {
-          input.value = savedData.consommation ?? 0;
-          calculateEmission(row);
-        }, 50);
-      }
-
-      const totalRow = document.querySelector(".total-row");
-      tbody.insertBefore(row, totalRow);
-    }
-
-    function calculateEmission(row) {
-      const select = row.querySelector("select");
-      const input = row.querySelector("input");
-      const output = row.querySelector(".emission-result");
-
-      const facteur = parseFloat(select.selectedOptions[0]?.dataset.factor);
-      const quantite = parseFloat(input.value);
-
-      if (!isNaN(facteur) && !isNaN(quantite)) {
-        const emission = facteur * quantite;
-        output.textContent = emission.toFixed(2);
-      } else {
-        output.textContent = "0.00";
-      }
-
-      updateTotal();
-    }
-
-    function updateTotal() {
-      let total = 0;
-      document.querySelectorAll("tr.row-energie").forEach(row => {
-        const emission = parseFloat(row.querySelector(".emission-result").textContent);
-        if (!isNaN(emission)) total += emission;
-      });
-
-      document.getElementById("total-energie").textContent = total.toFixed(2);
-    }
-
-    function saveEnergieEmission() {
-      const rows = document.querySelectorAll("tr.row-energie");
-      const energieData = [];
-
-      rows.forEach(row => {
-        const select = row.querySelector("select");
-        const input = row.querySelector("input");
-
-        const typeEnergie = select.value;
-        const consommation = parseFloat(input.value) || 0;
-
-        if(typeEnergie && consommation > 0) {
-          energieData.push({ typeEnergie, consommation });
-        }
-      });
-
-      const total = parseFloat(document.getElementById("total-energie").textContent) || 0;
-      const data = JSON.parse(localStorage.getItem("emissionData") || "{}");
-      data.energie = total;
-      data.energieRows = energieData;
-      localStorage.setItem("emissionData", JSON.stringify(data));
-    }
-
-    document.getElementById("next-step").addEventListener("click", function () {
-      saveEnergieEmission();
-      window.location.href = "/equipements";
-    });
-
-    document.getElementById("prev-step").addEventListener("click", function () {
-      saveEnergieEmission();
-      window.location.href = "/transport";
-    });
-
-    window.addEventListener("DOMContentLoaded", () => {
-      const data = JSON.parse(localStorage.getItem("emissionData") || "{}");
-      if (data.energieRows && data.energieRows.length) {
-        data.energieRows.forEach(rowData => {
-          addEnergyRow(rowData);
+        const tdCat = document.createElement('td');
+        const selCat = document.createElement('select');
+        selCat.innerHTML = `<option value="">-- Choisir --</option>`;
+        Object.keys(enginsData[scope]).forEach(cat => {
+          const opt = document.createElement('option');
+          opt.value = cat;
+          opt.textContent = cat;
+          if (row.categorie === cat) opt.selected = true;
+          selCat.appendChild(opt);
         });
-      }
+        selCat.onchange = e => {
+          row.categorie = e.target.value;
+          row.engin = '';
+          row.facteur = 0;
+          afficherDescription('');
+          saveAndRender();
+        };
+        tdCat.appendChild(selCat);
+        tr.appendChild(tdCat);
+
+        const tdEngin = document.createElement('td');
+        const selEngin = document.createElement('select');
+        selEngin.innerHTML = `<option value="">-- Choisir --</option>`;
+        if (row.categorie && enginsData[scope][row.categorie]) {
+          enginsData[scope][row.categorie].forEach(engin => {
+            const opt = document.createElement('option');
+            opt.value = engin.nom;
+            opt.textContent = engin.nom;
+            if (engin.nom === row.engin) opt.selected = true;
+            selEngin.appendChild(opt);
+          });
+        }
+        selEngin.onchange = e => {
+          const selected = e.target.value;
+          row.engin = selected;
+          if (row.categorie) {
+            const match = enginsData[scope][row.categorie].find(engin => engin.nom === selected);
+            row.facteur = match ? match.facteur : 0;
+            row.description = match ? match.description : '';
+            row.unite = match ? match.unite : 'U';
+            afficherDescription(row.description);
+          }
+          saveAndRender();
+        };
+        tdEngin.appendChild(selEngin);
+        tr.appendChild(tdEngin);
+
+        const tdQte = document.createElement('td');
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = '0';
+        input.value = row.quantite || 0;
+        input.oninput = e => {
+          row.quantite = parseFloat(e.target.value) || 0;
+          saveAndRender();
+        };
+        tdQte.appendChild(input);
+        tr.appendChild(tdQte);
+
+        const tdEm = document.createElement('td');
+        const total = (row.facteur || 0) * (row.quantite || 0);
+        tdEm.textContent = total.toFixed(2);
+        tr.appendChild(tdEm);
+
+        const tdAct = document.createElement('td');
+        const btn = document.createElement('button');
+        btn.className = 'action-btn';
+        btn.textContent = '🗑️';
+        btn.onclick = () => {
+          energyRows.splice(energyRows.indexOf(row), 1);
+          afficherDescription('');
+          saveAndRender();
+        };
+        tdAct.appendChild(btn);
+        tr.appendChild(tdAct);
+
+        tbody.appendChild(tr);
+      });
+
+      const subtotal = rowsFiltered.reduce((acc, r) => acc + (r.facteur * r.quantite), 0);
+      const trSub = document.createElement('tr');
+      trSub.className = 'subtotal-row';
+      const td1 = document.createElement('td');
+      td1.colSpan = 4;
+      td1.textContent = `Sous-total ${scope.replace('_', ' ')}`;
+      const td2 = document.createElement('td');
+      td2.innerHTML = `<span>${subtotal.toFixed(2)}</span> kg CO₂`;
+      trSub.appendChild(td1);
+      trSub.appendChild(td2);
+      tbody.appendChild(trSub);
     });
-  </script>
+
+    const total = energyRows.reduce((acc, r) => acc + (r.facteur * r.quantite), 0);
+    const trTot = document.createElement('tr');
+    trTot.className = 'total-row';
+    const tdT1 = document.createElement('td');
+    tdT1.colSpan = 4;
+    tdT1.textContent = 'Total';
+    const tdT2 = document.createElement('td');
+    tdT2.innerHTML = `<span>${total.toFixed(2)}</span> kg CO₂`;
+    trTot.appendChild(tdT1);
+    trTot.appendChild(tdT2);
+    tbody.appendChild(trTot);
+
+    // Sauvegarde sessionStorage
+    sessionStorage.setItem('energyRows', JSON.stringify(energyRows));
+
+    // Sauvegarde localStorage (émissionData)
+    const emissionData = JSON.parse(localStorage.getItem("emissionData")) || {};
+    emissionData.energie = total;
+
+    const autresDetails = (emissionData.details || []).filter(item => item.categorie !== "Énergie");
+
+    const nouveauxDetails = energyRows.map(row => ({
+      nom: row.engin,
+      categorie: "Énergie",
+      scope: row.scope,
+      facteur: row.facteur,
+      unite: row.unite || "U"
+    }));
+
+    emissionData.details = [...autresDetails, ...nouveauxDetails];
+
+    localStorage.setItem("emissionData", JSON.stringify(emissionData));
+  }
+
+  function addEnergyRow(scope) {
+    energyRows.push({
+      scope,
+      categorie: '',
+      engin: '',
+      description: '',
+      quantite: 0,
+      facteur: 0,
+      unite: ''
+    });
+    afficherDescription('');
+    saveAndRender();
+  }
+
+  function saveAndRender() {
+    renderTable();
+  }
+
+  function precedent() {
+    window.location.href = "{{ url_for('transport') }}";
+  }
+
+  function suivant() {
+    const totalEmission = energyRows.reduce((acc, r) => acc + (r.facteur * r.quantite), 0);
+    const emissionData = JSON.parse(localStorage.getItem("emissionData")) || {};
+    emissionData.energie = totalEmission;
+
+    const autresDetails = (emissionData.details || []).filter(item => item.categorie !== "Énergie");
+    const nouveauxDetails = energyRows.map(row => ({
+      nom: row.engin,
+      categorie: "Énergie",
+      scope: row.scope,
+      facteur: row.facteur,
+      unite: row.unite || "U"
+    }));
+    emissionData.details = [...autresDetails, ...nouveauxDetails];
+
+    localStorage.setItem("emissionData", JSON.stringify(emissionData));
+
+    window.location.href = "{{ url_for('equipements') }}";
+  }
+
+  function handleQuit() {
+    sessionStorage.removeItem('energyRows');
+    window.location.href = "/";
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const saved = sessionStorage.getItem('energyRows');
+    if (saved) {
+      energyRows = JSON.parse(saved);
+    }
+    renderTable();
+  });
+</script>
+
+
 </body>
 </html>
