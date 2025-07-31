@@ -73,14 +73,14 @@ def get_transport_data():
             "personne": {
                 "routier": "transportroutierpersonnes3",
                 "aérien": "transportaerienpersonnes3",
-                # "maritime": "transportmaritimepersonnes3",
+                 "maritime": "transportmaritimepersonnes3",
                 "ferroviaire": "transportferroviairepersonnes3"
             },
             "marchandise": {
                 "routier": "transportroutiermarchandise3",
                 "aérien": "transportaerienmarchandise3",
-                # "maritime": "transportmaritimemarchandise3",
-                # "ferroviaire": "transportferroviairemarchandise3"
+                "maritime": "transportmaritimemarchandise3",
+                "ferroviaire": "transportferroviairemarchandise3"
             }
         }
     }
