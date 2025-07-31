@@ -21,6 +21,17 @@ def get_db_connection():
 
 
 
+def table_exists(cur, table_name):
+    cur.execute("""
+        SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_name = %s
+        );
+    """, (table_name,))
+    return cur.fetchone()[0]
+
+
+
 
 def get_transport_data():
     conn = get_db_connection()
@@ -28,46 +39,73 @@ def get_transport_data():
 
     base_donnees = {}
 
+    # Tables classées par scope, type de transport, et mode (routier, aérien, etc.)
     tables_info = {
         "scope_1": {
-            "personne": "transportroutierpersonnes1",
-            "marchandise": "transportroutiermarchandise1"
+            "personne": {
+                "routier": "transportroutierpersonnes1"
+                # "aérien": "transportaerienpersonnes1",
+                # "maritime": "transportmaritimepersonnes1",
+                # "ferroviaire": "transportferroviairepersonnes1"
+            },
+            "marchandise": {
+                "routier": "transportroutiermarchandise1"
+                # "aérien": "transportaerienmarchandise1",
+                # "maritime": "transportmaritimemarchandise1",
+                # "ferroviaire": "transportferroviairemarchandise1"
+            }
         },
         "scope_2": {
-            "personne": "transportroutierpersonnes2",
-            "marchandise": "transportroutiermarchandise2"
+            "personne": {
+                "routier": "transportroutierpersonnes2"
+                # "aérien": "transportaerienpersonnes2",
+                # "maritime": "transportmaritimepersonnes2",
+                # "ferroviaire": "transportferroviairepersonnes2"
+            },
+            "marchandise": {
+                "routier": "transportroutiermarchandise2"
+                # "aérien": "transportaerienmarchandise2"
+                # "maritime": "transportmaritimemarchandise2",
+                # "ferroviaire": "transportferroviairemarchandise2"
+            }
         },
         "scope_3": {
-            "personne": "transportroutierpersonnes3",
-            "marchandise": "transportroutiermarchandise3"
+            "personne": {
+                "routier": "transportroutierpersonnes3",
+                "aérien": "transportaerienpersonnes3",
+                # "maritime": "transportmaritimepersonnes3",
+                "ferroviaire": "transportferroviairepersonnes3"
+            },
+            "marchandise": {
+                "routier": "transportroutiermarchandise3",
+                "aérien": "transportaerienmarchandise3",
+                # "maritime": "transportmaritimemarchandise3",
+                # "ferroviaire": "transportferroviairemarchandise3"
+            }
         }
     }
 
     for scope, types in tables_info.items():
         base_donnees[scope] = {}
-        for type_transport, table in types.items():
-            # Initialiser toutes les catégories vides
-            base_donnees[scope][type_transport] = {
-                "routier": [],
-                "aérien": [],
-                "maritime": [],
-                "ferroviaire": []
-            }
-
-            # Remplir uniquement la catégorie "routier" avec les données de la table actuelle
-            cur.execute(f"SELECT id, nom, description, emission FROM {table};")
-            lignes = cur.fetchall()
-            for ligne in lignes:
-                base_donnees[scope][type_transport]["routier"].append({
-                    "id": ligne["id"],
-                    "nom": ligne["nom"],
-                    "facteur": float(ligne["emission"]),
-                    "description": ligne["description"]
-                })
+        for type_transport, modes in types.items():
+            base_donnees[scope][type_transport] = {}
+            for mode, table in modes.items():
+                base_donnees[scope][type_transport][mode] = []
+                if table is not None:
+                    cur.execute(f"SELECT id, nom, description, emission FROM {table};")
+                    lignes = cur.fetchall()
+                    for ligne in lignes:
+                        base_donnees[scope][type_transport][mode].append({
+                            "id": ligne["id"],
+                            "nom": ligne["nom"],
+                            "facteur": float(ligne["emission"]),
+                            "description": ligne["description"]
+                        })
 
     cur.close()
     conn.close()
     return base_donnees
+
 
 
 @app.route("/transport")
@@ -126,88 +164,79 @@ def energie():
 
 
 
+def safe_value(val, default=""):
+    if val is None:
+        return default
+    try:
+        if isinstance(val, (str, int, float)):
+            return val
+        return str(val)
+    except Exception:
+        return default
 
 
 
-
-def get_equipement_data():
+def get_equipements_data():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-
-    categories = [
-        "agriculture",
-        "sante",
-        "it",
-        "construction",
-        "education",
-        "industrie"
-    ]
 
     cur.execute("SELECT id, nom FROM scope ORDER BY id;")
     scopes = cur.fetchall()
 
+    categories = {
+        "Construction": "equipementsagriculture3",
+        "Plastique": "equipementsplastique3",
+        "Papier/Carton": "equipementspapiercarton3",
+        "Autre": "equipementsautre3",
+        "Électrique/IT": "equipementselectriqueit3"
+    }
+
     data = {}
 
     for scope in scopes:
-        scope_nom = scope["nom"].lower().replace(" ", "_")
-        scope_id = scope["id"]
+        scope_nom = scope['nom'].lower().replace(" ", "_")
         data[scope_nom] = {}
 
-        for cat in categories:
-            table_name = f"equipement_{cat}"
+        for categorie_nom, table in categories.items():
             try:
                 cur.execute(f"""
                     SELECT nom, emission, description
-                    FROM {table_name}
+                    FROM {table}
                     WHERE scope_id = %s;
-                """, (scope_id,))
+                """, (scope['id'],))
                 rows = cur.fetchall()
+            except psycopg2.Error as e:
+                conn.rollback()
+                print(f"Erreur SQL sur la table {table} : {e}")
+                rows = []
 
-                if rows:
-                    data[scope_nom][cat.capitalize()] = []
-                    for row in rows:
-                        data[scope_nom][cat.capitalize()].append({
-                            "nom": row["nom"],
-                            "facteur": float(row["emission"]),
-                            "description": row["description"],
-                            "unite": "U"
-                        })
-            except Exception as e:
-                print(f"Erreur avec la table {table_name} : {e}")
-                continue
+            data[scope_nom][categorie_nom] = []
+            for row in rows:
+                data[scope_nom][categorie_nom].append({
+                    "nom": safe_value(row['nom']),
+                    "facteur": float(row['emission']) if row['emission'] is not None else 0.0,
+                    "description": safe_value(row['description']),
+                    "unite": "U"
+                })
 
     cur.close()
     conn.close()
     return data
 
-
-
-
-
 @app.route('/equipements')
 def equipements():
-    engins = {
-        'scope_3': {
-            'Agriculture': [
-                {'nom': 'Tracteur', 'facteur': 123.4, 'description': 'Tracteur agricole', 'unite': 'U'},
-                {'nom': 'Moissonneuse', 'facteur': 456.7, 'description': 'Moissonneuse-batteuse', 'unite': 'U'}
-            ],
-            'Industrie': [
-                {'nom': 'Compresseur', 'facteur': 234.5, 'description': 'Compresseur industriel', 'unite': 'U'}
-            ],
-            'Santé': [
-                {'nom': 'Electro-cardiogramme', 'facteur': 56.3, 'description': 'Mesure de l\'activité cardiaque','unite': 'U'}
-            ],
-            'Contruction': [
-                {'nom': 'Bétonier', 'facteur': 156, 'description': 'Outil permettant de faire les bétons', 'unite': 'U'}
-            ],
+    base_donnees_equipements = get_equipements_data()
 
-            'IT/Télécom/Electricité': [
-                {'nom': 'Ordinateur', 'facteur': 98, 'description': 'Machine élctronique', 'unite': 'U'}
-            ],
-        }
-    }
-    return render_template('equipements.html', engins_equipements=engins)
+    try:
+        base_donnees_json = json.dumps(base_donnees_equipements)
+    except TypeError as e:
+        print("Erreur JSON:", e)
+        base_donnees_json = "{}"
+
+    return render_template('equipements.html', engins_equipements=get_equipements_data())
+
+
+
 
 
 
